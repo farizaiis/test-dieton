@@ -15,7 +15,8 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       qty: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue : 1
       },
       calAmount: {
         type: Sequelize.INTEGER
