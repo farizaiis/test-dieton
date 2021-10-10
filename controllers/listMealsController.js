@@ -5,7 +5,8 @@ const { listMeals, foods, mealsPlans } = require('../models')
 module.exports = {
     postListMeals : async (req, res) => {
         const body = req.body
-        const { mealsplan, food } = req.query
+        const mealsPlanId = req.query.mealsplan
+        const foodId = req.query.food
         try {
             const schema = Joi.object({
                 mealsPlanId : Joi.number().required(),
@@ -15,8 +16,8 @@ module.exports = {
             })
 
             const check = schema.validate({
-                mealsPlanId : mealsplan,
-                foodId : food,
+                mealsPlanId : mealsPlanId,
+                foodId : foodId,
                 qty : body.qty
                 }, { abortEarly : false });
 
@@ -30,7 +31,7 @@ module.exports = {
             
             const cekMealsPlan = await mealsPlans.findOne({
                 where : {
-                    id : mealsplan
+                    id : mealsPlanId
                 }
             })
 
@@ -43,7 +44,7 @@ module.exports = {
             
             const cekFood = await foods.findOne({
                 where: {
-                    id : food
+                    id : foodId
                 }
             })
 
@@ -55,8 +56,8 @@ module.exports = {
             }
 
             const dataListMeals = await listMeals.create({
-                mealsPlanId : mealsplan,
-                foodId : food,
+                mealsPlanId : mealsPlanId,
+                foodId : foodId,
                 qty : body.qty,
                 calAmount : cekFood.dataValues.calorie * body.qty
             });
