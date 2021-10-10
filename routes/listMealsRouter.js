@@ -4,3 +4,5 @@ const listMeals = require('../controllers/listMealsController')
 
 router.post('/', listMeals.postListMeals)
 router.delete('/:id', listMeals.deleteListMeals)
+
+module.exports = router
