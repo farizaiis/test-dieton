@@ -9,13 +9,23 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       userId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model : "users",
+          key : "id"
+        },
+        onUpdate : "CASCADE",
+        onDelete : "CASCADE"
+
       },
       mealsTime: {
         type: Sequelize.ENUM('Breafast', 'Lunch', 'Dinner', 'Snack')
       },
+      totalCalAmount: {
+        type: Sequelize.INTEGER
+      },
       date: {
-        type: Sequelize.DATE
+        type: Sequelize.DATEONLY
       },
       status: {
         type: Sequelize.ENUM(0, 1),

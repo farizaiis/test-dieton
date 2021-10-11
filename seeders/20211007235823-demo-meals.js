@@ -7,7 +7,7 @@ module.exports = {
             calorie: 105,
             unit: 'Slice',
         }])
-   
+
   },
   down: async (queryInterface, Sequelize) => {
     return await queryInterface.bulkDelete('foods', null, {});

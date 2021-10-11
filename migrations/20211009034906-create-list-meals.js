@@ -9,10 +9,24 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       mealsPlanId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model : "mealsPlans",
+          key : "id"
+        },
+        onUpdate : "CASCADE",
+        onDelete : "CASCADE"
+
       },
       foodId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model : "foods",
+          key : "id"
+        },
+        onUpdate : "CASCADE",
+        onDelete : "CASCADE"
+
       },
       qty: {
         type: Sequelize.INTEGER,
