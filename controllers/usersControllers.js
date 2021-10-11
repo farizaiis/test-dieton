@@ -59,6 +59,21 @@ module.exports = {
             };
             
             const token = generateToken(payload);
+
+            const checking = Joi.object({
+                calorieSize: Joi.integer().required()
+            })
+
+            const checkSchema = checking.validate({
+                calorieSize: body.calorieSize
+            }, { abortEarly: false });
+
+            if(checkSchema.error) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "please fill the required"
+                })
+            };
             
             const createCalorieSize = await calorieTrackers.create({
                 userId: createUser.dataValues.id,
