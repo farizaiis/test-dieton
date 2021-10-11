@@ -1,5 +1,5 @@
-const Joi = require('joi').extend('@joi/date')
-const { mealsPlans } = require('../models')
+const Joi = require('joi').extend(require('@joi/date'))
+const { mealsPlans, listMeals } = require('../models')
 
 module.exports = {
     postMealsPlans : async (req, res) => {
@@ -128,4 +128,26 @@ module.exports = {
         }
     },
     
+    // getMealsPlans : async (req, res) => {
+    //     try {
+    //         const dataMealsPlans = await mealsPlans.findAll()
+    //         if (!dataMealsPlans) {
+    //             return res.status(400).json({
+    //                 status: "failed",
+    //                 message: "Data not found",
+    //             })
+    //         }
+    //         return res.status(200).json({
+    //             status: "success",
+    //             message: "Success get foods data",
+    //             data: dataMealsPlans
+    //         })
+    //     } catch (error) {
+    //             console.log(error);
+    //             return res.status(500).json({
+    //             status: "failed",
+    //             message: "Internal Server Error"
+    //         })
+    //     }
+    // },
 }

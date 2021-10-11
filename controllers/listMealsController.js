@@ -62,10 +62,27 @@ module.exports = {
                 calAmount : cekFood.dataValues.calorie * body.qty
             });
 
+            const getCalAmount = await listMeals.findAll({
+                where: {mealsPlanId : mealsPlanId}
+            })
+
+            let sumCalAmount = getCalAmount.map(e => {
+                return e.dataValues.calAmount
+            })
+
+            sumCalAmount.push(body.rating)
+
+            const sum = sumCalAmount.reduce((a,b) => a+b)
+
+            const newTotalCalAmount = await mealsPlans.update({
+                totalCalAmount : sum
+            }, { where : {id : mealsPlanId}})
+
             return res.status(200).json({
                         status: "success",
                         message: "Succesfully input new food to the List",
-                        data : dataListMeals
+                        data : dataListMeals,
+                        // totalAmountNow : newTotalCalAmount
                     });
             
         } catch (error) {
