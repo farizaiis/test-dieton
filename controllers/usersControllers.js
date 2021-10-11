@@ -14,14 +14,16 @@ module.exports = {
                 fullName: Joi.string().required(),
                 email: Joi.string().required(),
                 password: Joi.string().min(6).max(12).required(),
-                profilePic: Joi.string()
+                profilePic: Joi.string(),
+                calorieSize: Joi.number().required()
             })
 
             const check = schema.validate({
                 fullName: body.fullName,
                 email: body.email,
                 password: body.password,
-                profilePic: req.file ? req.file.path : "profilePic"
+                profilePic: req.file ? req.file.path : "profilePic",
+                calorieSize: body.calorieSize
             }, { abortEarly: false });
 
             if(check.error) {
@@ -46,7 +48,7 @@ module.exports = {
             };
 
             const createUser = await users.create({
-                fullName: body.fullName,
+                fullName: body.fullName.toLowerCase(),
                 email: body.email,
                 password: encrypt(body.password),
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null
@@ -59,21 +61,6 @@ module.exports = {
             };
             
             const token = generateToken(payload);
-
-            const checking = Joi.object({
-                calorieSize: Joi.integer().required()
-            })
-
-            const checkSchema = checking.validate({
-                calorieSize: body.calorieSize
-            }, { abortEarly: false });
-
-            if(checkSchema.error) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "please fill the required"
-                })
-            };
             
             const createCalorieSize = await calorieTrackers.create({
                 userId: createUser.dataValues.id,
@@ -177,6 +164,13 @@ module.exports = {
                 }
             })
 
+            if(!userData) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "data not found"
+                })
+            };
+
             if(userData.id !== dataToken.id) {
                 return res.status(400).json({
                     status: "failed",
@@ -195,13 +189,6 @@ module.exports = {
                     userId: id
                 }
             })
-
-            if(!dataUser) {
-                res.status(400).json({
-                    status: "failed",
-                    message: "data not found"
-                })
-            }
 
             return res.status(200).json({
                 status: "success",
@@ -247,6 +234,13 @@ module.exports = {
                 }
             })
 
+            if(!dataUser) {
+                return res.status(400).json({
+                    status: " failed",
+                    message: "data not found"
+                })
+            }
+
             if(dataUser.dataValues.fullName == body.fullName) {
                 return res.status(400).json({
                     status: "failed",
@@ -254,7 +248,9 @@ module.exports = {
                 })
             }
 
-            if(dataUser.dataValues.password == body.password) {
+            const checkPass = comparePass(body.password, dataUser.dataValues.password)
+
+            if(checkPass) {
                 return res.status(400).json({
                     status: "failed",
                     message: "please add another password"
@@ -262,7 +258,7 @@ module.exports = {
             }
 
             const updateUser = await users.update({
-                fullName: body.fullName,
+                fullName: body.fullName.toLowerCase(),
                 password: body.password,
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null
                 },
@@ -296,9 +292,9 @@ module.exports = {
 
     getUserById : async (req, res) => {
         const id = req.params.id
-
+        
         try{
-            dataToken = req.users
+            const dataToken = req.users
 
             const profileUser = await users.findOne({
                 where: {
@@ -306,18 +302,18 @@ module.exports = {
                 },
                 
             });
+            
+            if(!profileUser) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "data not found"
+                })
+            };
 
             if(profileUser.id !== dataToken.id) {
                 return res.status(400).json({
                     status: "failed",
                     message: "not authorize"
-                })
-            };
-
-            if(!profileUser) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "data not found"
                 })
             };
 
@@ -327,6 +323,7 @@ module.exports = {
                 data: profileUser
             })
         } catch (error) {
+            console.log("🚀 ~ file: usersControllers.js ~ line 326 ~ getUserById: ~ error", error)
             return res.status(500).json({
                 status : "failed",
                 message : "Internal Server Error"
