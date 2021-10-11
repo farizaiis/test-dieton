@@ -283,6 +283,8 @@ module.exports = {
         const id = req.params.id
 
         try{
+            dataToken = req.users
+
             const profileUser = await user.findOne({
                 where: {
                     id: id
@@ -290,12 +292,19 @@ module.exports = {
                 
             });
 
+            if(profileUser.id !== dataToken.id) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "not authorize"
+                })
+            };
+
             if(!profileUser) {
                 return res.status(400).json({
                     status: "failed",
                     message: "data not found"
                 })
-            }
+            };
 
             return res.status(200).json({
                 status: "success",
@@ -309,5 +318,5 @@ module.exports = {
             })
         }
     }
-}
+};
 
