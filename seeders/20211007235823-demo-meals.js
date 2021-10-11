@@ -6,6 +6,8 @@ module.exports = {
             name: 'Banana',
             calorie: 105,
             unit: 'Slice',
+            createdAt : new Date(),
+            updatedAt : new Date()
         }])
 
   },

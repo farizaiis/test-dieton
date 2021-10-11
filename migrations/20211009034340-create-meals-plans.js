@@ -9,14 +9,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       userId: {
-        type: Sequelize.INTEGER,
-        references: {
-          model : "users",
-          key : "id"
-        },
-        onUpdate : "CASCADE",
-        onDelete : "CASCADE"
-
+        type: Sequelize.INTEGER
       },
       mealsTime: {
         type: Sequelize.ENUM('Breafast', 'Lunch', 'Dinner', 'Snack')
@@ -28,8 +21,8 @@ module.exports = {
         type: Sequelize.DATEONLY
       },
       status: {
-        type: Sequelize.ENUM(0, 1),
-        defaultValue : 0
+        type: Sequelize.INTEGER,
+        defaultValue : '0'
       },
       createdAt: {
         allowNull: false,
