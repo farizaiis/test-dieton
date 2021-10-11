@@ -1,4 +1,4 @@
-const Joi = require('joi').extend('@joi/date')
+const Joi = require('joi').extend(require('@joi/date'))
 const { mealsPlans, listMeals } = require('../models')
 
 module.exports = {
