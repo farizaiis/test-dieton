@@ -1,9 +1,13 @@
 const express = require('express')
 const router = express.Router()
-const usersRoute = require('./users')
-// const userCalorieTrackersRoute = require('./calorieTrackers')
+const listMealsRouter = require ('./listMealsRouter')
+const mealsPlansRouter = require ('./mealsPlansRouter')
+const foodsRouter = require ('./foodsRouter')
+// const nutritionFacts = ('./nutritionFactsRouter')
 
-router.use('/users', usersRoute)
-// router.use('/calorietrackers', userCalorieTrackersRoute)
+// router.use('/facts', nutritionFacts)
+router.use('/foods', foodsRouter)
+router.use('/listmeals', listMealsRouter)
+router.use('/mealsplan', mealsPlansRouter)
 
 module.exports = router
