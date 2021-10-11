@@ -1,4 +1,4 @@
-const { user, calorieTracker } = require('../models');
+const { users, calorieTrackers } = require('../models');
 require('dotenv').config();
 const Joi = require('joi');
 const { generateToken, getUserdata } = require('../helper/jwt');
@@ -32,7 +32,7 @@ module.exports = {
                 });
             }
 
-            const checkEmail = await user.findOne({
+            const checkEmail = await users.findOne({
                 where: {
                     email: body.email
                 }
@@ -45,7 +45,7 @@ module.exports = {
                 })
             };
 
-            const createUser = await user.create({
+            const createUser = await users.create({
                 fullName: body.fullName,
                 email: body.email,
                 password: encrypt(body.password),
@@ -60,7 +60,7 @@ module.exports = {
             
             const token = generateToken(payload);
             
-            const createCalorieSize = await calorieTracker.create({
+            const createCalorieSize = await calorieTrackers.create({
                 userId: createUser.dataValues.id,
                 calorieSize:  body.calorieSize,
                 calConsumed: 0,
@@ -105,7 +105,7 @@ module.exports = {
                 });
             }
 
-            const userEmailData = await user.findOne({
+            const userEmailData = await users.findOne({
                 where: {
                     email: body.email
                 }
@@ -156,7 +156,7 @@ module.exports = {
             const dataToken = req.users;
             console.log("🚀 ~ file: usersControllers.js ~ line 157 ~ delete: ~ dataToken", dataToken)
 
-            const userData = await user.findOne({
+            const userData = await users.findOne({
                 where: {
                     id: id
                 }
@@ -175,7 +175,7 @@ module.exports = {
                 }
             })
 
-            const deleteDataCalorie = await calorieTracker.destroy({
+            const deleteDataCalorie = await calorieTrackers.destroy({
                 where: {
                     userId: id
                 }
@@ -226,7 +226,7 @@ module.exports = {
                 })
             };
 
-            const dataUser = await user.findOne({
+            const dataUser = await users.findOne({
                 where: { 
                     id: id
                 }
@@ -246,7 +246,7 @@ module.exports = {
                 }) 
             }
 
-            const updateUser = await user.update({
+            const updateUser = await users.update({
                 fullName: body.fullName,
                 password: body.password,
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null
@@ -261,7 +261,7 @@ module.exports = {
                 })
             }
 
-            const userFinalUpdate = await user.findOne({
+            const userFinalUpdate = await users.findOne({
                 where: { id: id }
             })
 
@@ -285,7 +285,7 @@ module.exports = {
         try{
             dataToken = req.users
 
-            const profileUser = await user.findOne({
+            const profileUser = await users.findOne({
                 where: {
                     id: id
                 },
