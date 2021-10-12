@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       foods.belongsToMany(models.mealsPlans,
         {
           through: models.listMeals,
-          as : "mealsPlans"
+          as : "listmeals"
         })
     }
   };
