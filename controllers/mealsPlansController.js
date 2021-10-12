@@ -1,5 +1,5 @@
 const Joi = require('joi').extend(require('@joi/date'))
-const { mealsPlans, listMeals } = require('../models')
+const { mealsPlans, listMeals, foods } = require('../models')
 
 module.exports = {
     postMealsPlans : async (req, res) => {
@@ -8,7 +8,7 @@ module.exports = {
             const schema = Joi.object({
                 userId : Joi.number(),
                 mealsTime : Joi.string().required(),
-                date : Joi.date().required()
+                date : Joi.date().format("YYYY-M-D").required()
             })
 
             const check = schema.validate({
@@ -54,10 +54,55 @@ module.exports = {
             
         } catch (error) {
             console.log(error);
+            if (error.name === "SequelizeDatabaseError" && error.parent.routine === "enum_in") {
+                return res.status(400).json({ status : "failed", message: "Breakfast, Lunch, or Dinner only for meals time" })
+            }
             return res.status(500).json({
             status: "failed",
             message: "Internal Server Error",
             });
+        }
+    },
+
+    getUserPlans : async (req, res) => {
+        try {
+            const getMealsPlans = await mealsPlans.findAll({
+                where : { userId : req.users.id, date : req.query.date },
+                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                // include : [{
+                //     model : listMeals,
+                //     as : "listMeals",
+                //     attributes : { exclude : ["id", "createdAt", "updatedAt"]},
+                    // include : [{
+                    //     model : foods,
+                    //     as : "foods",
+                    //     attributes : { exclude : ["id", "createdAt", "updatedAt"]}
+                    // }]
+                // }]
+
+                include : [{
+                    model : foods,
+                    as : "listmeals"
+                }]
+            })
+
+            if (!getMealsPlans) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "Data not found"
+                })
+            }
+
+            return res.status(200).json({
+                status: "success",
+                message: "Success get foods data",
+                data: getMealsPlans
+            })
+        } catch (error) {
+            return res.status(500).json({
+                status: "failed",
+                message: "Internal Server Error"
+            })
         }
     },
 

@@ -70,10 +70,10 @@ module.exports = {
                 return e.dataValues.calAmount
             })
 
-            sumCalAmount.push(body.rating)
+            sumCalAmount.push(body.qty)
 
             const sum = sumCalAmount.reduce((a,b) => a+b)
-
+            console.log("sum", sum)
             const newTotalCalAmount = await mealsPlans.update({
                 totalCalAmount : sum
             }, { where : {id : mealsPlanId}})

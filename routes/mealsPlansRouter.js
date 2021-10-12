@@ -1,9 +1,11 @@
 const express = require('express')
 const router = express.Router()
 const mealsPlans = require('../controllers/mealsPlansController')
+const { loginCheck } = require('../middlewares/authentication')
 
-router.post('/', mealsPlans.postMealsPlans)
-router.put('/status/:id', mealsPlans.updateStatus)
-router.delete('/:id', mealsPlans.deleteMealsPlans)
+router.post('/', loginCheck, mealsPlans.postMealsPlans)
+router.get('/', loginCheck, mealsPlans.getUserPlans)
+router.put('/status/:id', loginCheck, mealsPlans.updateStatus)
+router.delete('/:id', loginCheck, mealsPlans.deleteMealsPlans)
 
 module.exports = router
