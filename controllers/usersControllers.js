@@ -329,6 +329,23 @@ module.exports = {
                 message : "Internal Server Error"
             })
         }
+    },
+
+    getAllUser: async (req, res) => {
+        try {
+            const getAll = await user.findAll()
+
+            return res.status(200).json({
+                status: "success",
+                message: "success retrieved data",
+                data: getAll
+            })
+        } catch (error) {
+            return res.status(500).json({
+                status : "failed",
+                message : "Internal Server Error"
+            }) 
+        }
     }
 };
 
