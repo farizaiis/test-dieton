@@ -154,7 +154,7 @@ module.exports = {
                 waistline,
                 thigh
             }, {
-                where: { id }
+                where: { userId: req.users.id, date: req.query.date }
             });
 
             if (!updateWeight) {
@@ -165,7 +165,7 @@ module.exports = {
             }
 
             const response = await weightMeasures.findOne({
-                where: { id }
+                where: { userId: req.users.id, date: req.query.date }
             });
 
             res.status(200).json({
