@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     calorieSize: DataTypes.INTEGER,
     calConsumed: DataTypes.INTEGER,
     remainCalSize: DataTypes.INTEGER,
-    date: DataTypes.DATE
+    date: DataTypes.DATEONLY
   }, {
     sequelize,
     modelName: 'calorieTrackers',

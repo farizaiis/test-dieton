@@ -73,7 +73,9 @@ module.exports = {
             return res.status(200).json({
                     status: "success",
                     message: "sign up successfully",
-                    token: token
+                    token: token,
+                    dataUser: createUser,
+                    dataCalorie: createCalorieSize
                 });
 
         } catch (error) {
