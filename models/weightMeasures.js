@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
     height: DataTypes.INTEGER,
     waistline: DataTypes.INTEGER,
     thigh: DataTypes.INTEGER,
-    date: DataTypes.DATE
+    date: DataTypes.DATEONLY
   }, {
     sequelize,
     modelName: 'weightMeasures',
