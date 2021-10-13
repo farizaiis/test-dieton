@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      calorieTrackers.belongsTo(models.users, {foreignKey: 'userId'});
     }
   };
   calorieTrackers.init({
