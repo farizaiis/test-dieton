@@ -127,7 +127,9 @@ module.exports = {
                 status : 1
             },
             {where : {
-                id : req.params.id
+                userId : req.users.id,
+                mealstime : req.query.type,
+                date : req.query.date,
             }}
             );
 
@@ -140,7 +142,27 @@ module.exports = {
 
             const dataMealsPlans = await mealsPlans.findOne({
                 where : {
-                    id : req.params.id
+                    userId : req.users.id,
+                    mealstime : req.query.type,
+                    date : req.query.date,
+                }
+            })
+
+            const getCalTrack = await calorieTrackers.findOne({
+                where : {
+                    userId : dataMealsPlans.dataValues.userId,
+                    date : dataMealsPlans.dataValues.date
+                }
+            })
+
+            await calorieTrackers.update(
+            {
+                calConsumed : getCalTrack.datavalues.calConsumed + dataMealsPlans.dataValues.totalCalAmount
+            },
+            {
+                where : {
+                    userId : dataMealsPlans.dataValues.userId,
+                    date : dataMealsPlans.dataValues.date
                 }
             })
 
