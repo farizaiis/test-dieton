@@ -1,5 +1,5 @@
 const Joi = require('joi').extend(require('@joi/date'))
-const { mealsPlans, listMeals, foods } = require('../models')
+const { mealsPlans, listMeals, foods, calorieTrackers } = require('../models')
 
 module.exports = {
     postMealsPlans : async (req, res) => {
@@ -66,27 +66,42 @@ module.exports = {
 
     getUserPlans : async (req, res) => {
         try {
-            const getMealsPlans = await mealsPlans.findAll({
-                where : { userId : req.users.id, date : req.query.date },
-                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
-                // include : [{
-                //     model : listMeals,
-                //     as : "listMeals",
-                //     attributes : { exclude : ["id", "createdAt", "updatedAt"]},
-                    // include : [{
-                    //     model : foods,
-                    //     as : "foods",
-                    //     attributes : { exclude : ["id", "createdAt", "updatedAt"]}
-                    // }]
-                // }]
+            const dates = req.query.dates
 
+            if(!dates) {
+                const getByUserId = await mealsPlans.findAll({
+                    where : { userId : req.users.id },
+                    attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                    include : [{
+                        model : foods,
+                        as : "listmeals"
+                }]
+                })
+
+                if (!getByUserId) {
+                    return res.status(400).json({
+                        status: "failed",
+                        message: "Data not found"
+                    })
+                }
+
+                return res.status(200).json({
+                    status: "success",
+                    message: "Success get data Meals Plan",
+                    data: getByUserId
+                })
+            }
+
+            const getByDate = await mealsPlans.findAll({
+                where : { userId : req.users.id, date : dates },
+                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
                 include : [{
                     model : foods,
                     as : "listmeals"
                 }]
             })
 
-            if (!getMealsPlans) {
+            if (!getByDate) {
                 return res.status(400).json({
                     status: "failed",
                     message: "Data not found"
@@ -95,8 +110,8 @@ module.exports = {
 
             return res.status(200).json({
                 status: "success",
-                message: "Success get foods data",
-                data: getMealsPlans
+                message: "Success get data Meals Plan",
+                data: getByDate
             })
         } catch (error) {
             return res.status(500).json({
@@ -172,27 +187,4 @@ module.exports = {
             });
         }
     },
-    
-    // getMealsPlans : async (req, res) => {
-    //     try {
-    //         const dataMealsPlans = await mealsPlans.findAll()
-    //         if (!dataMealsPlans) {
-    //             return res.status(400).json({
-    //                 status: "failed",
-    //                 message: "Data not found",
-    //             })
-    //         }
-    //         return res.status(200).json({
-    //             status: "success",
-    //             message: "Success get foods data",
-    //             data: dataMealsPlans
-    //         })
-    //     } catch (error) {
-    //             console.log(error);
-    //             return res.status(500).json({
-    //             status: "failed",
-    //             message: "Internal Server Error"
-    //         })
-    //     }
-    // },
 }

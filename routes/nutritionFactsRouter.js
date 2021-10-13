@@ -8,4 +8,5 @@ router.get('/:id', Fact.getOneFact)
 router.post('/', Fact.postFacts)
 router.put('/', Fact.updateFacts)
 router.delete('/:id', Fact.deleteFacts)
+
 module.exports = router

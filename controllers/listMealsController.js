@@ -55,6 +55,17 @@ module.exports = {
                 });
             }
 
+            const cekListMeals = await listMeals.findOne({
+                where : {mealsPlanId : mealsPlanId, foodId : foodId}
+            })
+
+            if (cekListMeals) {
+                return res.status(400).json({
+                    status: "fail",
+                    message: "Cant add same list food",
+                });
+            }
+
             const dataListMeals = await listMeals.create({
                 mealsPlanId : mealsPlanId,
                 foodId : foodId,
@@ -62,27 +73,14 @@ module.exports = {
                 calAmount : cekFood.dataValues.calorie * body.qty
             });
 
-            const getCalAmount = await listMeals.findAll({
-                where: {mealsPlanId : mealsPlanId}
-            })
-
-            let sumCalAmount = getCalAmount.map(e => {
-                return e.dataValues.calAmount
-            })
-
-            sumCalAmount.push(body.qty)
-
-            const sum = sumCalAmount.reduce((a,b) => a+b)
-            console.log("sum", sum)
-            const newTotalCalAmount = await mealsPlans.update({
-                totalCalAmount : sum
+            await mealsPlans.update({
+                totalCalAmount : (cekMealsPlan.dataValues.totalCalAmount + dataListMeals.dataValues.calAmount)
             }, { where : {id : mealsPlanId}})
 
             return res.status(200).json({
                         status: "success",
                         message: "Succesfully input new food to the List",
-                        data : dataListMeals,
-                        // totalAmountNow : newTotalCalAmount
+                        data : dataListMeals
                     });
             
         } catch (error) {
@@ -96,22 +94,161 @@ module.exports = {
 
     deleteListMeals : async (req, res) => {
         try {
-            const deleteListMeals = await listMeals.destroy({
+            const cekListMeals = await listMeals.findOne({
                 where : {
                     id : req.params.id
                 }
-            });
+            })
 
-            if(!deleteListMeals) {
+            if(!cekListMeals) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Data not found"
                 });
             }
 
+            const cekMealsPlan = await mealsPlans.findOne({
+                where : {
+                    id : cekListMeals.dataValues.mealsPlanId
+                }
+            })
+
+            await mealsPlans.update({
+                totalCalAmount : (cekMealsPlan.dataValues.totalCalAmount - cekListMeals.dataValues.calAmount)
+            }, { where : {id : cekMealsPlan.dataValues.id}})
+
+            await listMeals.destroy({
+                where : {
+                    id : req.params.id
+                }
+            });
+
             return res.status(200).json({
                         status: "success",
                         message: "Deleted Succesfully"
+            })
+            
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({
+            status: "failed",
+            message: "Internal Server Error",
+            });
+        }
+    },
+
+    getAll : async (req, res) => {
+        try {
+            const mealsplan = req.query.mealsplan
+
+            if (!mealsplan) {
+                const allData = await listMeals.findAll({
+                    attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                    include : [{
+                    model : foods
+                }]
+                })
+                return res.status(200).json({
+                    status: "success",
+                    message: "Success get list meals data",
+                    data: allData
+                })
+            }
+
+            const dataListMeals = await listMeals.findAll({
+                where : { mealsPlanId : mealsplan},
+                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                include : [{
+                    model : foods
+                }]
+            })
+
+            if (!dataListMeals) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "Data not found"
+                })
+            }
+
+            return res.status(200).json({
+                status: "success",
+                message: "Success get list meals data",
+                data: dataListMeals
+            })
+        } catch (error) {
+            return res.status(500).json({
+                status: "failed",
+                message: "Internal Server Error"
+            })
+        }
+    },
+
+    updateQtyMeals : async (req, res) => {
+        try {
+            const schema = Joi.object({
+                qty : Joi.number(),
+                calAmount : Joi.number()
+            })
+
+            const check = schema.validate({
+                qty : req.body.qty
+                }, { abortEarly : false });
+
+            if (check.error) {
+                    return res.status(400).json({
+                    status : "failed",
+                    message : "Bad Request",
+                    errors : check.error["details"].map(({ message }) => message )
+                })
+            }
+
+            const cekMeals = await listMeals.findOne({
+                where : {
+                    id : req.params.id
+                }
+            })
+
+            if(!cekMeals) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Data not found"
+                });
+            }
+
+            const oldCalAmount = cekMeals.dataValues.calAmount
+
+            const dataFood = await foods.findOne({
+                where: {
+                    id : cekMeals.dataValues.foodId
+                }
+            })
+
+            await listMeals.update(
+                {
+                    qty : req.body.qty,
+                    calAmount : dataFood.dataValues.calorie * req.body.qty
+                }, 
+                {where : {id : req.params.id}}
+            )
+
+            const getMeals = await listMeals.findOne({
+                where : { id : req.params.id }
+            })
+
+            const cekMealsPlan = await mealsPlans.findOne({
+                where : {
+                    id : getMeals.dataValues.mealsPlanId
+                }
+            })
+
+            await mealsPlans.update({
+                totalCalAmount : (cekMealsPlan.dataValues.totalCalAmount - oldCalAmount + getMeals.dataValues.calAmount)
+            }, { where : {id : cekMealsPlan.dataValues.id}})
+
+            return res.status(200).json({
+                        status: "success",
+                        message: "Update Succesfully",
+                        data : getMeals
             })
             
         } catch (error) {
