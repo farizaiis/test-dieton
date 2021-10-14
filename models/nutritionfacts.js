@@ -16,8 +16,9 @@ module.exports = (sequelize, DataTypes) => {
   nutritionFacts.init({
     poster: DataTypes.STRING,
     title: DataTypes.STRING,
-    linkArticle: DataTypes.STRING,
-    releaseDate: DataTypes.DATE
+    creator: DataTypes.STRING,
+    releaseDate: DataTypes.DATE,
+    content: DataTypes.TEXT
   }, {
     sequelize,
     modelName: 'nutritionFacts',

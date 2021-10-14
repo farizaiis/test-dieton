@@ -31,6 +31,13 @@ module.exports = {
           createdAt : new Date(),
           updatedAt : new Date()
         },
+        {
+          name: 'Strawberry Jam',
+          calorie: 42,
+          unit: 'Spoon',
+          createdAt : new Date(),
+          updatedAt : new Date()
+        }
       ])
 
   },

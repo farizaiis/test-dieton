@@ -62,19 +62,20 @@ module.exports = {
     },
     getAllFoods : async (req, res) => {
         try {
-            const { name } = req.query.name
-            const GetFoods = await foods.findAll({
-                name: {
-                    [Op.like]: `%${name}%`
-                }
+            const names = req.query.name ? req.query.name : ""
+            const GetFoods = await foods.findAll({ 
+                where: {
+                    name: {
+                        [Op.iLike]: '%' + names + '%'
+                    }}
             })
 
-            if (!GetFoods) {
+            if (!GetFoods > 0) {
                 return res.status(400).json({
                     status: "failed",
+                    message: "Data not found"
                 })
             }
-
             return res.status(200).json({
                 status: "success",
                 message: "Success get foods data",
@@ -112,6 +113,7 @@ module.exports = {
         }
     },
     updateFoods : async (req, res) => {
+        const body = req.body
         const id = req.params.id
         try {
             const schema = Joi.object({
@@ -119,13 +121,11 @@ module.exports = {
                 calorie : Joi.number(),
                 unit : Joi.string(),
             })
-
             const check = schema.validate({
                 name : body.name,
                 calorie : body.calorie,
                 unit : body.unit
             })
-
             if (check.error) {
                 return res.status(400).json({
                 status : "failed",
@@ -133,10 +133,17 @@ module.exports = {
                 errors : check.error["details"].map(({ message }) => message )
                 })
             }
-
-            const editFoods = await foods.update({
-                where: { id }
-            })
+            const Foods = await foods.update(
+                {
+                    name : body.name,
+                    calorie : body.calorie,
+                    unit : body.unit
+                },
+                {
+                    where: { id: id}
+                }
+            )
+            const editFoods = await foods.findByPk(id)
             if (!editFoods) {
                 return res.status(400).json({
                     status: "failed",
@@ -155,7 +162,6 @@ module.exports = {
             })
         }
     },
-
     deleteFoods : async (req, res) => {
         const id = req.params.id
         try {
