@@ -80,6 +80,7 @@ module.exports = {
             });
 
             const createWeightMeasure = await weightMeasures.create({
+                userId: createUser.dataValues.id,
                 weight: body.weight,
                 height: body.height,
                 waistline: body.waistline,
