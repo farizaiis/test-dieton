@@ -5,7 +5,7 @@ const foods = require('../controllers/foodsController')
 router.get('/', foods.getAllFoods)
 router.get('/:id', foods.getOneFoods)
 router.post('/', foods.createFoods)
-router.put('/', foods.updateFoods)
-router.delete('/', foods.deleteFoods)
+router.put('/:id', foods.updateFoods)
+router.delete('/:id', foods.deleteFoods)
 
 module.exports = router

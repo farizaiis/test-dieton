@@ -14,11 +14,14 @@ module.exports = {
       title: {
         type: Sequelize.STRING,
       },
-      linkArticle: {
+      creator: {
         type: Sequelize.STRING,
       },
       releaseDate: {
         type: Sequelize.DATE,
+      },
+      content: {
+        type: Sequelize.TEXT,
       },
       createdAt: {
         allowNull: false,

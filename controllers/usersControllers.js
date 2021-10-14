@@ -1,7 +1,8 @@
-const { users, calorieTrackers } = require('../models');
+const { users, calorieTrackers, weightMeasures } = require('../models');
 require('dotenv').config();
 const Joi = require('joi');
-const { generateToken, getUserdata } = require('../helper/jwt');
+const moment = require('moment');
+const { generateToken } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
 
 
@@ -15,7 +16,11 @@ module.exports = {
                 email: Joi.string().required(),
                 password: Joi.string().min(6).max(12).required(),
                 profilePic: Joi.string(),
-                calorieSize: Joi.number().required()
+                calorieSize: Joi.number().required(),
+                weight: Joi.number().required(),
+                height: Joi.number().required(),
+                waistline: Joi.number().required(),
+                thigh: Joi.number().required()
             })
 
             const check = schema.validate({
@@ -23,7 +28,11 @@ module.exports = {
                 email: body.email,
                 password: body.password,
                 profilePic: req.file ? req.file.path : "profilePic",
-                calorieSize: body.calorieSize
+                calorieSize: body.calorieSize,
+                weight: body.weight,
+                height: body.height,
+                waistline: body.waistline,
+                thigh: body.thigh
             }, { abortEarly: false });
 
             if(check.error) {
@@ -48,7 +57,7 @@ module.exports = {
             };
 
             const createUser = await users.create({
-                fullName: body.fullName.toLowerCase(),
+                fullName: body.fullName,
                 email: body.email,
                 password: encrypt(body.password),
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null
@@ -67,13 +76,25 @@ module.exports = {
                 calorieSize:  body.calorieSize,
                 calConsumed: 0,
                 remainCalSize: body.calorieSize,
-                date: new Date()
+                date: moment(new Date()).local()
             });
+
+            const createWeightMeasure = await weightMeasures.create({
+                userId: createUser.dataValues.id,
+                weight: body.weight,
+                height: body.height,
+                waistline: body.waistline,
+                thigh: body.thigh,
+                date: moment(new Date()).local()
+            })
 
             return res.status(200).json({
                     status: "success",
                     message: "sign up successfully",
-                    token: token
+                    token: token,
+                    dataUser: createUser,
+                    dataCalorie: createCalorieSize,
+                    dataWeight: createWeightMeasure
                 });
 
         } catch (error) {
@@ -172,7 +193,7 @@ module.exports = {
             };
 
             if(userData.id !== dataToken.id) {
-                return res.status(400).json({
+                return res.status(401).json({
                     status: "failed",
                     message: "not authorize"
                 })
@@ -189,6 +210,12 @@ module.exports = {
                     userId: id
                 }
             })
+
+            const deleteWeightData = await weightMeasures.destroy({
+                where: {
+                    userId: id
+                }
+            });
 
             return res.status(200).json({
                 status: "success",
@@ -258,7 +285,7 @@ module.exports = {
             }
 
             const updateUser = await users.update({
-                fullName: body.fullName.toLowerCase(),
+                fullName: body.fullName,
                 password: body.password,
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null
                 },
@@ -268,7 +295,7 @@ module.exports = {
             if(!updateUser) {
                 return res.status(400).json({
                     status: "failed",
-                    message: "unbale to input the data"
+                    message: "unable to input the data"
                 })
             }
 
@@ -328,6 +355,23 @@ module.exports = {
                 status : "failed",
                 message : "Internal Server Error"
             })
+        }
+    },
+
+    getAllUser: async (req, res) => {
+        try {
+            const getAll = await user.findAll()
+
+            return res.status(200).json({
+                status: "success",
+                message: "success retrieved data",
+                data: getAll
+            })
+        } catch (error) {
+            return res.status(500).json({
+                status : "failed",
+                message : "Internal Server Error"
+            }) 
         }
     }
 };
