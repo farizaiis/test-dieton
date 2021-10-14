@@ -11,12 +11,7 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
-            weightMeasures.belongsTo(models.userId, { foreignKey: 'userId' }, {
-                through: models.userId,
-                as: "userId"
-            })
-
-            weightMeasures.hasToMany(models.users, { foreignKey: 'userId' })
+            weightMeasures.belongsTo(models.users, { foreignKey: 'userId' })
         }
     };
     weightMeasures.init({
