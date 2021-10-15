@@ -42,7 +42,7 @@ module.exports = {
                 })
             }
 
-            if(cekMealsPlan.dataValues.status = 1){
+            if(cekMealsPlan.dataValues.status == 1){
                 return res.status(400).json({
                     status : "fail",
                     message : "Cant add list meals when status has done or passed"
