@@ -222,12 +222,6 @@ module.exports = {
                 }
             })
 
-            const cekMealsPlan = await mealsPlans.findOne({
-                where : {
-                    id : cekMeals.dataValues.mealsPlanId
-                }
-            })
-
             if(!cekMeals) {
                 return res.status(400).json({
                     status : "failed",
