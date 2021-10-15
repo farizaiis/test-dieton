@@ -224,7 +224,7 @@ module.exports = {
 
             const cekMealsPlan = await mealsPlans.findOne({
                 where : {
-                    id : getMeals.dataValues.mealsPlanId
+                    id : cekMeals.dataValues.mealsPlanId
                 }
             })
 
