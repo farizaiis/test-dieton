@@ -115,12 +115,12 @@ module.exports = {
                 });
             }
 
-            const getUserHeight = await users.findOne({
+            const getUser = await users.findOne({
                 where : { id : req.users.id }
             })
-            const newProgres = wnmYesterday.dataValues.weight - weight
+            const newProgres = getUser.dataValues.earlyWeight - weight
 
-            const heightInMeter = getUserHeight.dataValues.height/100
+            const heightInMeter = getUser.dataValues.height/100
 
             const newBmi = weight / (heightInMeter ** 2)
 
