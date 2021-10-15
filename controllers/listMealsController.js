@@ -238,7 +238,7 @@ module.exports = {
             if(cekMealsPlan.dataValues.status == 1) {
                 return res.status(400).json({
                     status : "failed",
-                    message : "Cant delete list where status has done"
+                    message : "Cant update list where status has done"
                 });
             }
 
