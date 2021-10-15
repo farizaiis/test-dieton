@@ -157,7 +157,7 @@ module.exports = {
 
             await calorieTrackers.update(
             {
-                calConsumed : getCalTrack.datavalues.calConsumed + dataMealsPlans.dataValues.totalCalAmount
+                calConsumed : getCalTrack.dataValues.calConsumed + dataMealsPlans.dataValues.totalCalAmount
             },
             {
                 where : {
