@@ -129,9 +129,11 @@ module.exports = {
 
             const heightInMeter = getUserHeight.dataValues.height/100
 
+            const newBmi = newProgres / (heightInMeter ** 2)
+
             await users.update({
                 progres : newProgres,
-                BMI : newProgres / (heightInMeter ** 2)
+                BMI : Math.round(newBmi)
             })
 
             res.status(200).json({
