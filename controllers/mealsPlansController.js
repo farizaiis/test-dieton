@@ -15,7 +15,7 @@ module.exports = {
             const check = schema.validate({
                 userId : req.users.id,
                 mealsTime : body.mealsTime,
-                date : body.date
+                date : moment(new Date(body.date)).local()
                 }, { abortEarly : false });
 
             if (check.error) {
@@ -28,7 +28,7 @@ module.exports = {
 
             const today = moment(new Date()).local()
             
-            if(body.date < today ) {
+            if(moment(new Date(body.date)).local() < today ) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Cant post date already passed"
