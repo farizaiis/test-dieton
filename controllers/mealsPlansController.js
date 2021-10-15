@@ -128,7 +128,7 @@ module.exports = {
             },
             {where : {
                 userId : req.users.id,
-                mealstime : req.query.type,
+                mealsTime : req.query.type,
                 date : req.query.date,
             }}
             );
@@ -143,7 +143,7 @@ module.exports = {
             const dataMealsPlans = await mealsPlans.findOne({
                 where : {
                     userId : req.users.id,
-                    mealstime : req.query.type,
+                    mealsTime : req.query.type,
                     date : req.query.date,
                 }
             })
