@@ -83,8 +83,6 @@ module.exports = {
 
             const today = moment(new Date()).local().format("LL")
 
-            const yesterday = moment(new Date()).local().subtract(1, "day").format("LL")
-
             const tomorrow = moment(new Date()).local().subtract(-1, "day").format("LL")
 
 
@@ -117,16 +115,12 @@ module.exports = {
                 });
             }
 
-            const wnmYesterday = await weightMeasures.findOne({
-                where: { userId: req.users.id, date: yesterday }
-            });
-
-            const getUserHeight = await users.findOne({
+            const getUser = await users.findOne({
                 where : { id : req.users.id }
             })
-            const newProgres = wnmYesterday.dataValues.weight - weight
+            const newProgres = getUser.dataValues.earlyWeight - weight
 
-            const heightInMeter = getUserHeight.dataValues.height/100
+            const heightInMeter = getUser.dataValues.height/100
 
             const newBmi = weight / (heightInMeter ** 2)
 
