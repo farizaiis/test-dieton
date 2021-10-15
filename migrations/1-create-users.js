@@ -19,6 +19,7 @@ module.exports = {
       },
       profilePic: {
         type: Sequelize.STRING,
+        defaultValue: "https://res.cloudinary.com/dejongos/image/upload/v1634276426/profilePic/default.png"
       },
       role: {
         type: Sequelize.ENUM('admin', 'user'),
