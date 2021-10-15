@@ -8,13 +8,12 @@ module.exports = {
         try {
             const schema = Joi.object({
                 userId : Joi.number(),
-                mealsTime : Joi.string().required(),
+                mealsTime : Joi.string(),
                 date : Joi.date().format("YYYY-M-D").required()
             })
 
             const check = schema.validate({
                 userId : req.users.id,
-                mealsTime : body.mealsTime,
                 date : body.date
                 }, { abortEarly : false });
 
@@ -26,9 +25,9 @@ module.exports = {
                 })
             }
 
-            const today = moment(new Date()).local()
-            
-            if(moment(new Date(body.date)).local() < today ) {
+            const today = moment(new Date()).local().format("LL")
+
+            if(moment(new Date(body.date)).local().format("LL") < today) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Cant post date already passed"
@@ -38,7 +37,6 @@ module.exports = {
             const checkuser = await mealsPlans.findOne({
                 where: {
                     userId : req.users.id,
-                    mealsTime : body.mealsTime,
                     date : body.date
                 }
             })
@@ -46,20 +44,36 @@ module.exports = {
             if(checkuser) {
                 return res.status(400).json({
                     status: "fail",
-                    message: "Cant post same type MealsPlan at same day",
+                    message: "Cant post MealsPlan at same day",
                 });
             }
 
-            const dataMealsPlans = await mealsPlans.create({
+            await mealsPlans.create({
                 userId : req.users.id,
-                mealsTime : body.mealsTime,
+                mealsTime : "Breakfast",
                 date : body.date
             });
+
+            await mealsPlans.create({
+                userId : req.users.id,
+                mealsTime : "Lunch",
+                date : body.date
+            });
+
+            await mealsPlans.create({
+                userId : req.users.id,
+                mealsTime : "Dinner",
+                date : body.date
+            });
+
+            const cekData = await mealsPlans.findAll({
+                where : { userId : req.users.id, date : body.date}
+            })
 
             return res.status(200).json({
                         status: "success",
                         message: "Succesfully input new MealsPlan",
-                        data : dataMealsPlans
+                        data : cekData
                     });
             
         } catch (error) {
@@ -76,7 +90,7 @@ module.exports = {
 
     getUserPlans : async (req, res) => {
         try {
-            const dates = req.query.dates
+            const dates = req.query.date
 
             if(!dates) {
                 const getByUserId = await mealsPlans.findAll({
@@ -133,15 +147,6 @@ module.exports = {
 
     updateStatus : async (req, res) => {
         try { 
-            const today = moment(new Date()).local()
-            
-            if(req.query.date < today ) {
-                return res.status(400).json({
-                    status : "failed",
-                    message : "Cant update, date already passed"
-                })
-            }
-
             const cekMealsPlans = await mealsPlans.findOne({
                 where : {
                     userId : req.users.id,
@@ -164,7 +169,14 @@ module.exports = {
                 })
             }
 
-            const updateMealsPlans = await mealsPlans.update({
+            if(cekMealsPlans.dataValues.status = 1){
+                return res.status(400).json({
+                    status : "failed",
+                    message : "the Meals Plan Already update"
+                })
+            }
+
+            await mealsPlans.update({
                 status : 1
             },
             {where : {
@@ -173,13 +185,6 @@ module.exports = {
                 date : req.query.date,
             }}
             );
-
-            if(!updateMealsPlans) {
-                return res.status(400).json({
-                    status : "failed",
-                    message : "Data not found"
-                });
-            }
 
             const dataMealsPlans = await mealsPlans.findOne({
                 where : {
@@ -199,7 +204,7 @@ module.exports = {
             await calorieTrackers.update(
             {
                 calConsumed : getCalTrack.dataValues.calConsumed + dataMealsPlans.dataValues.totalCalAmount,
-                remainCalSize : getCalTrack.dataValues.remainCalSize - getCalTrack.dataValues.calConsumed - dataMealsPlans.dataValues.totalCalAmount
+                remainCalSize : (getCalTrack.dataValues.remainCalSize - getCalTrack.dataValues.calConsumed - dataMealsPlans.dataValues.totalCalAmount)
             },
             {
                 where : {
