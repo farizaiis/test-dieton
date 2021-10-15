@@ -228,7 +228,20 @@ module.exports = {
                 }
             })
 
-            if(!cekMeals || !cekMealsPlan) {
+            if(!cekMeals) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Data not found"
+                });
+            }
+
+            const cekMealsPlan = await mealsPlans.findOne({
+                where : {
+                    id : cekMeals.dataValues.mealsPlanId
+                }
+            })
+
+            if(!cekMealsPlan) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Data not found"
