@@ -7,6 +7,6 @@ const { authAdmin } = require('../middlewares/authorization')
 router.get('/', loginCheck, listMeals.getAll)
 router.post('/', loginCheck, listMeals.postListMeals)
 router.delete('/:id', loginCheck, listMeals.deleteListMeals)
-router.put('/:id', loginCheck, authAdmin, listMeals.updateQtyMeals)
+router.put('/:id', loginCheck, listMeals.updateQtyMeals)
 
 module.exports = router
