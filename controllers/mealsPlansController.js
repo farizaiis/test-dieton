@@ -203,8 +203,8 @@ module.exports = {
             },
             {
                 where : {
-                    userId : dataMealsPlans.dataValues.userId,
-                    date : dataMealsPlans.dataValues.date
+                    userId : req.users.id,
+                    date : req.query.date
                 }
             })
 
