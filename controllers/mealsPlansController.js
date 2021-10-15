@@ -1,4 +1,5 @@
 const Joi = require('joi').extend(require('@joi/date'))
+const moment = require('moment')
 const { mealsPlans, listMeals, foods, calorieTrackers } = require('../models')
 
 module.exports = {
@@ -24,7 +25,16 @@ module.exports = {
                     errors : check.error["details"].map(({ message }) => message )
                 })
             }
+
+            const today = moment(new Date()).local()
             
+            if(body.date < today ) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Cant post date already passed"
+                })
+            }
+
             const checkuser = await mealsPlans.findOne({
                 where: {
                     userId : req.users.id,
@@ -123,6 +133,37 @@ module.exports = {
 
     updateStatus : async (req, res) => {
         try { 
+            const today = moment(new Date()).local()
+            
+            if(req.query.date < today ) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Cant update, date already passed"
+                })
+            }
+
+            const cekMealsPlans = await mealsPlans.findOne({
+                where : {
+                    userId : req.users.id,
+                    mealsTime : req.query.type,
+                    date : req.query.date
+                }
+            })
+
+            const cekCalorieTracker = await calorieTrackers.findOne({
+                where : {
+                    userId : req.users.id,
+                    date : req.query.date
+                }
+            })
+
+            if(!cekMealsPlans || !cekCalorieTracker) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Data not found"
+                })
+            }
+
             const updateMealsPlans = await mealsPlans.update({
                 status : 1
             },
@@ -150,19 +191,20 @@ module.exports = {
 
             const getCalTrack = await calorieTrackers.findOne({
                 where : {
-                    userId : dataMealsPlans.dataValues.userId,
-                    date : dataMealsPlans.dataValues.date
+                    userId : req.users.id,
+                    date : req.query.date
                 }
             })
 
             await calorieTrackers.update(
             {
-                calConsumed : getCalTrack.dataValues.calConsumed + dataMealsPlans.dataValues.totalCalAmount
+                calConsumed : getCalTrack.dataValues.calConsumed + dataMealsPlans.dataValues.totalCalAmount,
+                remainCalSize : getCalTrack.dataValues.remainCalSize - getCalTrack.dataValues.calConsumed - dataMealsPlans.dataValues.totalCalAmount
             },
             {
                 where : {
-                    userId : dataMealsPlans.dataValues.userId,
-                    date : dataMealsPlans.dataValues.date
+                    userId : req.users.id,
+                    date : req.query.date
                 }
             })
 
