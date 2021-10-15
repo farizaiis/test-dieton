@@ -127,9 +127,11 @@ module.exports = {
             })
             const newProgres = wnmYesterday.dataValues.weight - weight
 
+            const heightInMeter = getUserHeight.dataValues.height/100
+
             await users.update({
                 progres : newProgres,
-                BMI : newProgres / ((getUserHeight.dataValues.height*getUserHeight.dataValues.height) / 100)
+                BMI : newProgres / (heightInMeter ** 2)
             })
 
             res.status(200).json({
