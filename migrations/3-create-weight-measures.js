@@ -14,9 +14,6 @@ module.exports = {
             weight: {
                 type: Sequelize.INTEGER
             },
-            height: {
-                type: Sequelize.INTEGER
-            },
             waistline: {
                 type: Sequelize.INTEGER
             },

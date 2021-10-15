@@ -1,6 +1,6 @@
 const Joi = require('joi').extend(require('@joi/date'))
 const moment = require('moment')
-const { mealsPlans, listMeals, foods, calorieTrackers } = require('../models')
+const { mealsPlans, listMeals, foods, calorieTrackers, users } = require('../models')
 
 module.exports = {
     postMealsPlans : async (req, res) => {
@@ -66,14 +66,36 @@ module.exports = {
                 date : body.date
             });
 
+            const cekCalorieTracker = await calorieTrackers.findOne({
+                where : {date : today, userId : req.users.id}
+            })
+
+            const cekCalSize = await users.findOne({
+                where : {id : req.users.id}
+            })
+
+            if(!cekCalorieTracker) {
+                await calorieTrackers.create({
+                    userId : req.users.id,
+                    calConsumed : 0,
+                    remainCalSize : cekCalSize.dataValues.calSize
+                })
+            }
+
             const cekData = await mealsPlans.findAll({
-                where : { userId : req.users.id, date : body.date}
+                where : { userId : req.users.id, date : body.date},
+                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                    include : [{
+                        model : users,
+                        as : "users",
+                        attributes : { exclude : ["id", "createdAt", "updatedAt"] }
+                }]
             })
 
             return res.status(200).json({
                         status: "success",
                         message: "Succesfully input new MealsPlan",
-                        data : cekData
+                        datauser : cekData
                     });
             
         } catch (error) {
