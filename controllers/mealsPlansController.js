@@ -78,12 +78,18 @@ module.exports = {
                 await calorieTrackers.create({
                     userId : req.users.id,
                     calConsumed : 0,
-                    remainCalSize : cekCalSize.dataValues.calSize - 0
+                    remainCalSize : cekCalSize.dataValues.calSize
                 })
             }
 
             const cekData = await mealsPlans.findAll({
-                where : { userId : req.users.id, date : body.date}
+                where : { userId : req.users.id, date : body.date},
+                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                    include : [{
+                        model : users,
+                        as : "users",
+                        attributes : { exclude : ["id", "createdAt", "updatedAt"] }
+                }]
             })
 
             return res.status(200).json({
