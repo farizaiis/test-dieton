@@ -15,7 +15,7 @@ module.exports = {
             const check = schema.validate({
                 userId : req.users.id,
                 mealsTime : body.mealsTime,
-                date : body.date
+                date : moment(new Date(body.date)).local()
                 }, { abortEarly : false });
 
             if (check.error) {
