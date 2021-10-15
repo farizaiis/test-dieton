@@ -169,7 +169,7 @@ module.exports = {
                 })
             }
 
-            if(cekMealsPlans.dataValues.status = 1){
+            if(cekMealsPlans.dataValues.status == 1){
                 return res.status(400).json({
                     status : "failed",
                     message : "the Meals Plan Already update"
