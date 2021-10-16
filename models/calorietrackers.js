@@ -16,7 +16,6 @@ module.exports = (sequelize, DataTypes) => {
   };
   calorieTrackers.init({
     userId: DataTypes.INTEGER,
-    calorieSize: DataTypes.INTEGER,
     calConsumed: DataTypes.INTEGER,
     remainCalSize: DataTypes.INTEGER,
     date: DataTypes.DATEONLY

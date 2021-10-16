@@ -125,7 +125,7 @@ module.exports = {
             const newBmi = weight / (heightInMeter ** 2)
 
             await users.update({
-                progres : newProgres,
+                progress : newProgres,
                 BMI : Math.round(newBmi)
             })
 

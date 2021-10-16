@@ -67,7 +67,7 @@ module.exports = {
             });
 
             const cekCalorieTracker = await calorieTrackers.findOne({
-                where : {date : today, userId : req.users.id}
+                where : {date : body.date, userId : req.users.id}
             })
 
             const cekCalSize = await users.findOne({
@@ -87,8 +87,13 @@ module.exports = {
                 attributes : { exclude : ["id", "createdAt", "updatedAt"] },
                     include : [{
                         model : users,
-                        as : "users",
-                        attributes : { exclude : ["id", "createdAt", "updatedAt"] }
+                        as : 'users',
+                        attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                        include : [{
+                            model : calorieTrackers,
+                            as : 'calorietrackers',
+                            attributes : { exclude : ["id", "createdAt", "updatedAt"] }
+                        }]
                 }]
             })
 
@@ -226,7 +231,7 @@ module.exports = {
             await calorieTrackers.update(
             {
                 calConsumed : getCalTrack.dataValues.calConsumed + dataMealsPlans.dataValues.totalCalAmount,
-                remainCalSize : (getCalTrack.dataValues.remainCalSize - getCalTrack.dataValues.calConsumed - dataMealsPlans.dataValues.totalCalAmount)
+                remainCalSize : getCalTrack.dataValues.remainCalSize - dataMealsPlans.dataValues.totalCalAmount
             },
             {
                 where : {
