@@ -16,7 +16,7 @@ module.exports = {
                 email: Joi.string().required(),
                 password: Joi.string().min(6).max(12).required(),
                 profilePic: Joi.string(),
-                calorieSize: Joi.number().required(),
+                calorieSize: Joi.number().min(1000).max(2000).required(),
                 weight: Joi.number().required(),
                 height: Joi.number().required(),
                 waistline: Joi.number().required(),
@@ -222,7 +222,7 @@ module.exports = {
         }
     },
 
-    update: async (req, res) => {
+    updateUserProfile: async (req, res) => {
         const body = req.body;
 
         try {
@@ -230,14 +230,12 @@ module.exports = {
                 fullName: Joi.string(),
                 password: Joi.string().min(6).max(12),
                 profilePic: Joi.string(),
-                calorieSize: Joi.number()
             })
 
             const check = schema.validate({
                 fullName: body.fullName,
                 password: body.password,
-                profilePic: req.file ? req.file.path : "profilePic",
-                calorieSize: body.calorieSize
+                profilePic: req.file ? req.file.path : "profilePic"
             }, { abortEarly: false });
 
             if (check.error) {
@@ -261,75 +259,58 @@ module.exports = {
                 })
             }
 
-            const today = moment(new Date()).local()
-
-            if (body.calorieSize) {
-                const dataCalorieTrack = await calorieTrackers.findOne({
+            if (body.password) {
+                const dataUser = await users.findOne({
                     where: {
-                        userId: req.users.id,
-                        date: today
+                        id: req.users.id
                     }
-                })
+                });
 
-                await calorieTrackers.update(
-                    { remainCalSize: body.calorieSize - dataCalorieTrack.dataValues.calConsumed },
-                    {
-                        where: {
-                            userId: req.users.id,
-                            date: today
-                        }
+                const checkPass = comparePass(body.password, dataUser.dataValues.password)
+
+                if (checkPass) {
+                    return res.status(400).json({
+                        status: "failed",
+                        message: "please add another password"
+                    })
+                }
+
+                await users.update({
+                    password: encrypt(body.password)
+                }, {
+                    where: {
+                        id: req.users.id
                     }
-                );
-
-                const calorieUser = await users.update({
-                    calorieSize: body.calorieSize
-                },
-                    {
-                        where: {
-                            id: req.users.id
-                        }
-                    }
-                )
-
-                return res.status(200).json({
-                    status: "success",
-                    message: "success update calorie size"
                 })
             };
 
-            const checkPass = comparePass(body.password, dataUser.dataValues.password)
-
-            if (checkPass) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "please add another password"
-                })
-            }
-
             const updateUser = await users.update({
                 fullName: body.fullName,
-                password: body.password,
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
-                calorieSize: body.calorieSize
             },
-                { where: {id: req.users.id} }
-            )
-
+                {
+                    where: {
+                        id: req.users.id
+                    }
+                });
 
             if (!updateUser) {
                 return res.status(400).json({
                     status: "failed",
                     message: "unable to input the data"
                 })
-            }
+            };
 
-            // const userFinalUpdate = await users.findOne({
-            //     where: { id: id }
-            // })
+            const userFinalUpdate = await users.findOne({
+                where: {
+                    id: req.users.id
+                }
+            })
 
             return res.status(200).json({
                 status: "success",
                 message: "update successfully",
+                data: userFinalUpdate
             });
 
         } catch (error) {
@@ -342,14 +323,13 @@ module.exports = {
     },
 
     getUserById: async (req, res) => {
-        const id = req.params.id
 
         try {
             const dataToken = req.users
 
             const profileUser = await users.findOne({
                 where: {
-                    id: id
+                    id: req.users.id
                 },
 
             });
