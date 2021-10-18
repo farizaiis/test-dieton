@@ -1,81 +1,9 @@
 const Joi = require('joi').extend(require('@joi/date'))
-const { weightMeasures } = require('../models')
+const { weightMeasures, users } = require('../models')
+const moment = require('moment')
 
 
 module.exports = {
-    postWeight: async(req, res) => {
-        const userId = req.users.id;
-        const weight = req.body.weight;
-        const height = req.body.height;
-        const waistline = req.body.waistline;
-        const thigh = req.body.thigh;
-        const date = req.body.date;
-
-        try {
-            const schema = Joi.object({
-                userId: Joi.number(),
-                weight: Joi.number().required(),
-                height: Joi.number().required(),
-                waistline: Joi.number().required(),
-                thigh: Joi.number().required(),
-                date: Joi.date().format("YYYY-M-D").required()
-            })
-
-            const cekInput = schema.validate({
-                weight: weight,
-                height: height,
-                waistline: waistline,
-                thigh: thigh,
-                date: date,
-            }, { abortEarly: false })
-
-            if (cekInput.error) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "Bad Request",
-                    errors: cekInput.error["details"].map(({ message }) => message)
-                })
-            }
-
-            const check = await weightMeasures.findOne({ where: { userId, date } });
-
-            if (check) {
-                return res.status(400).json({
-                    status: 'failed',
-                    message: 'Already added data'
-                });
-            }
-
-            const data = await weightMeasures.create({
-                userId,
-                weight,
-                height,
-                waistline,
-                thigh,
-                date
-            });
-
-            if (!data) {
-                return res.status(400).json({
-                    status: 'failed',
-                    message: 'Cannot insert data weight'
-                })
-            }
-
-            return res.status(200).json({
-                status: 'Success',
-                message: 'Successfully insert data weight',
-                data: data
-            })
-
-        } catch (error) {
-            console.log(error)
-            return res.status(500).json({
-                status: 'failed',
-                message: 'Internal server error'
-            })
-        }
-    },
     getWeight: async(req, res) => {
         try {
             const dates = req.query.date
@@ -85,12 +13,14 @@ module.exports = {
                     attributes: { exclude: ['createdAt', 'updatedAt'] },
                     where: { userId: req.users.id }
                 });
-                res.status(200).json({
+                return res.status(200).json({
                     status: 'Success',
                     message: 'Data retrieved successfully',
                     data: data
                 });
             }
+
+
 
             const allData = await weightMeasures.findOne({
                 attributes: { exclude: ['createdAt', 'updatedAt'] },
@@ -98,18 +28,26 @@ module.exports = {
             });
 
             if (!allData) {
-                return res.status(400).json({
-                    status: "failed",
-                    massage: "Data not found"
+                const newData = await weightMeasures.create({
+                    userId : req.users.id,
+                    weight: 0,
+                    waistline: 0,
+                    thigh: 0,
+                    date: dates
+                })
+                
+                return res.status(200).json({
+                    status: 'Success',
+                    message: 'Data retrieved successfully',
+                    data: newData
                 });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 status: 'Success',
                 message: 'Data retrieved successfully',
                 data: allData
             });
-
         } catch (error) {
             console.log(error)
             return res.status(500).json({
@@ -118,24 +56,40 @@ module.exports = {
             })
         }
     },
+
     updateWeight: async(req, res) => {
-        const { id } = req.params;
         const weight = req.body.weight;
-        const height = req.body.height;
         const waistline = req.body.waistline;
         const thigh = req.body.thigh;
 
         try {
+            const today = moment(new Date()).local().format("YYYY-MM-DD")
+
+            const tomorrow = moment(new Date()).local().subtract(-1, "DD").format("YYYY-MM-DD")
+
+
+            if(moment(new Date(req.query.date)).local().format("YYYY-MM-DD") < today) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Cant update date already passed"
+                })
+            }
+
+            if(moment(new Date(req.query.date)).local().format("YYYY-MM-DD") > tomorrow) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Cant update for tomorrow"
+                })
+            }
+
             const schema = Joi.object({
-                weight: Joi.number(),
-                height: Joi.number(),
-                waistline: Joi.number(),
-                thigh: Joi.number()
+                weight: Joi.number().required(),
+                waistline: Joi.number().required(),
+                thigh: Joi.number().required()
             })
 
             const cekInput = schema.validate({
                 weight: weight,
-                height: height,
                 waistline: waistline,
                 thigh: thigh
             }, { abortEarly: false })
@@ -149,10 +103,9 @@ module.exports = {
             }
 
             const updateWeight = await weightMeasures.update({
-                weight,
-                height,
-                waistline,
-                thigh
+                weight: weight,
+                waistline: waistline,
+                thigh: thigh
             }, {
                 where: { userId: req.users.id, date: req.query.date }
             });
@@ -164,13 +117,24 @@ module.exports = {
                 });
             }
 
-            const response = await weightMeasures.findOne({
-                where: { userId: req.users.id, date: req.query.date }
-            });
+            const getUser = await users.findOne({
+                where : { id : req.users.id }
+            })
+            const newProgres = getUser.dataValues.earlyWeight - req.body.weight
 
-            res.status(200).json({
+            const heightInMeter = getUser.dataValues.height/100
+
+            const newBmi = req.body.weight / (heightInMeter ** 2)
+
+            await users.update({
+                progress : newProgres,
+                BMI : Math.round(newBmi)
+            },
+            {where : { id : req.users.id }})
+
+            return res.status(200).json({
                 status: 'Success',
-                message: 'Data update successfully'
+                message: 'Data update successfully',
             });
         } catch (error) {
             res.status(500).json({
@@ -179,6 +143,7 @@ module.exports = {
             })
         }
     },
+
     deleteWeight: async(req, res) => {
         const { id } = req.params;
         try {
@@ -195,5 +160,4 @@ module.exports = {
             })
         }
     }
-
 }

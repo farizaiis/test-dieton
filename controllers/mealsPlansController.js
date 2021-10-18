@@ -1,6 +1,6 @@
 const Joi = require('joi').extend(require('@joi/date'))
 const moment = require('moment')
-const { mealsPlans, listMeals, foods, calorieTrackers } = require('../models')
+const { mealsPlans, listMeals, foods, calorieTrackers, users } = require('../models')
 
 module.exports = {
     postMealsPlans : async (req, res) => {
@@ -25,9 +25,9 @@ module.exports = {
                 })
             }
 
-            const today = moment(new Date()).local().format("LL")
+            const today = moment(new Date()).local().format("YYYY-MM-DD")
 
-            if(moment(new Date(body.date)).local().format("LL") < today) {
+            if(moment(new Date(body.date)).local().format("YYYY-MM-DD") < today) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Cant post date already passed"
@@ -66,14 +66,32 @@ module.exports = {
                 date : body.date
             });
 
+            const cekCalorieTracker = await calorieTrackers.findOne({
+                where : {date : body.date, userId : req.users.id}
+            })
+
+            const cekCalSize = await users.findOne({
+                where : {id : req.users.id}
+            })
+
+            if(!cekCalorieTracker) {
+                await calorieTrackers.create({
+                    userId : req.users.id,
+                    calConsumed : 0,
+                    remainCalSize : cekCalSize.dataValues.calorieSize,
+                    date : req.body.date
+                })
+            }
+
             const cekData = await mealsPlans.findAll({
-                where : { userId : req.users.id, date : body.date}
+                where : { userId : req.users.id, date : body.date},
+                attributes : { exclude : ["id", "createdAt", "updatedAt"] }
             })
 
             return res.status(200).json({
                         status: "success",
                         message: "Succesfully input new MealsPlan",
-                        data : cekData
+                        datauser : cekData
                     });
             
         } catch (error) {
@@ -204,7 +222,7 @@ module.exports = {
             await calorieTrackers.update(
             {
                 calConsumed : getCalTrack.dataValues.calConsumed + dataMealsPlans.dataValues.totalCalAmount,
-                remainCalSize : (getCalTrack.dataValues.remainCalSize - getCalTrack.dataValues.calConsumed - dataMealsPlans.dataValues.totalCalAmount)
+                remainCalSize : getCalTrack.dataValues.remainCalSize - dataMealsPlans.dataValues.totalCalAmount
             },
             {
                 where : {

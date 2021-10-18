@@ -9,10 +9,13 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       userId: {
-        type: Sequelize.INTEGER
-      },
-      calorieSize: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model : "users",
+          key : "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete : "CASCADE"
       },
       calConsumed: {
         type: Sequelize.INTEGER
