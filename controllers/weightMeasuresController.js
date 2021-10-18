@@ -65,7 +65,7 @@ module.exports = {
         try {
             const today = moment(new Date()).local().format('LL')
 
-            const tomorrow = moment(new Date()).local().subtract(-1, "LL").format('LL')
+            const tomorrow = moment(new Date()).local().subtract(-2, "LL").format('LL')
 
 
             if(moment(new Date(req.query.date)).local().format('LL') < today) {

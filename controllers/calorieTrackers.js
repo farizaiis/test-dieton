@@ -100,18 +100,18 @@ module.exports = {
                 }
             });
 
-            const dataCalorieUser = await calorieTrackers.findOne({
-                where: {
-                    id: req.users.id,
-                    date: today
-                }
-            });
+            // const dataCalorieUser = await calorieTrackers.findOne({
+            //     where: {
+            //         id: req.users.id,
+            //         date: today
+            //     }
+            // });
 
             return res.status(200).json({
                 status: "success",
                 message: "success update calorie size",
-                dataUser: dataProfileUser,
-                dataCalorieTrackerUser: dataCalorieUser
+                // dataUser: dataProfileUser,
+                // dataCalorieTrackerUser: dataCalorieUser
             });
 
         } catch (error) {
