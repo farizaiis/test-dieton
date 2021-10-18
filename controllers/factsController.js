@@ -160,7 +160,7 @@ module.exports = {
                 where : {id: id}
             })
 
-            if(body.creator) {
+            if(body.creator !== "") {
                 const cekCreator = await nutritionFacts.findOne({
                     where : { title : cekArticle.dataValues.title, creator : body.creator }
                 })
@@ -173,7 +173,7 @@ module.exports = {
                 }
             }
 
-            if(body.title) {
+            if(body.title !== "") {
                 const cekTitle = await nutritionFacts.findOne({
                     where : { title : body.title, creator : cekArticle.dataValues.creator }
                 })
