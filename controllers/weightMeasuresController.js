@@ -63,12 +63,12 @@ module.exports = {
         const thigh = req.body.thigh;
 
         try {
-            const today = moment(new Date()).local().format('LL')
+            const today = moment(new Date()).local().format("YYYY-M-D")
 
-            const tomorrow = moment(new Date()).local().subtract(-2, "LL").format('LL')
+            const tomorrow = moment(new Date()).local().subtract(-1, "D").format("YYYY-M-D")
 
 
-            if(moment(new Date(req.query.date)).local().format('LL') < today) {
+            if(moment(new Date(req.query.date)).local().format("YYYY-M-D") < today) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Cant update date already passed"

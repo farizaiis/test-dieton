@@ -4,7 +4,7 @@ const Joi = require('joi')
 
 module.exports = {
     getDataById: async (req, res) => {
-        const dateData = moment(new Date()).local().format('LL');
+        const dateData = moment(new Date()).local().format("YYYY-M-D");
         const dataUserId = req.users.id;
 
         try {
@@ -59,7 +59,7 @@ module.exports = {
                 })
             };
 
-            const today = moment(new Date()).local().format('LL')
+            const today = moment(new Date()).local().format("YYYY-M-D")
 
             const dataCalorieTrack = await calorieTrackers.findOne({
                 where: {
@@ -100,18 +100,18 @@ module.exports = {
                 }
             });
 
-            // const dataCalorieUser = await calorieTrackers.findOne({
-            //     where: {
-            //         id: req.users.id,
-            //         date: today
-            //     }
-            // });
+            const dataCalorieUser = await calorieTrackers.findOne({
+                where: {
+                    id: req.users.id,
+                    date: today
+                }
+            });
 
             return res.status(200).json({
                 status: "success",
                 message: "success update calorie size",
-                // dataUser: dataProfileUser,
-                // dataCalorieTrackerUser: dataCalorieUser
+                dataUser: dataProfileUser,
+                dataCalorieTrackerUser: dataCalorieUser
             });
 
         } catch (error) {
