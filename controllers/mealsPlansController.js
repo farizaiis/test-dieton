@@ -25,9 +25,9 @@ module.exports = {
                 })
             }
 
-            const today = moment(new Date()).local().format("LL")
+            const today = moment(new Date()).local().format("YYYY-MM-DD")
 
-            if(moment(new Date(body.date)).local().format("LL") < today) {
+            if(moment(new Date(body.date)).local().format("YYYY-MM-DD") < today) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Cant post date already passed"
@@ -78,23 +78,14 @@ module.exports = {
                 await calorieTrackers.create({
                     userId : req.users.id,
                     calConsumed : 0,
-                    remainCalSize : cekCalSize.dataValues.calSize
+                    remainCalSize : cekCalSize.dataValues.calorieSize,
+                    date : req.body.date
                 })
             }
 
             const cekData = await mealsPlans.findAll({
                 where : { userId : req.users.id, date : body.date},
-                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
-                    include : [{
-                        model : users,
-                        as : 'users',
-                        attributes : { exclude : ["id", "createdAt", "updatedAt"] },
-                        include : [{
-                            model : calorieTrackers,
-                            as : 'calorietrackers',
-                            attributes : { exclude : ["id", "createdAt", "updatedAt"] }
-                        }]
-                }]
+                attributes : { exclude : ["id", "createdAt", "updatedAt"] }
             })
 
             return res.status(200).json({

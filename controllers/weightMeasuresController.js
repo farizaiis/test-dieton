@@ -13,12 +13,14 @@ module.exports = {
                     attributes: { exclude: ['createdAt', 'updatedAt'] },
                     where: { userId: req.users.id }
                 });
-                res.status(200).json({
+                return res.status(200).json({
                     status: 'Success',
                     message: 'Data retrieved successfully',
                     data: data
                 });
             }
+
+
 
             const allData = await weightMeasures.findOne({
                 attributes: { exclude: ['createdAt', 'updatedAt'] },
@@ -61,6 +63,25 @@ module.exports = {
         const thigh = req.body.thigh;
 
         try {
+            const today = moment(new Date()).local().format("YYYY-MM-DD")
+
+            const tomorrow = moment(new Date()).local().subtract(-1, "DD").format("YYYY-MM-DD")
+
+
+            if(moment(new Date(req.query.date)).local().format("YYYY-MM-DD") < today) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Cant update date already passed"
+                })
+            }
+
+            if(moment(new Date(req.query.date)).local().format("YYYY-MM-DD") > tomorrow) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Cant update for tomorrow"
+                })
+            }
+
             const schema = Joi.object({
                 weight: Joi.number().required(),
                 waistline: Joi.number().required(),
@@ -78,25 +99,6 @@ module.exports = {
                     status: "failed",
                     message: "Bad Request",
                     errors: cekInput.error["details"].map(({ message }) => message)
-                })
-            }
-
-            const today = moment(new Date()).local().format("LL")
-
-            const tomorrow = moment(new Date()).local().subtract(-1, "day").format("LL")
-
-
-            if(moment(new Date(req.query.date)).local().format("LL") < today) {
-                return res.status(400).json({
-                    status : "failed",
-                    message : "Cant update date already passed"
-                })
-            }
-
-            if(moment(new Date(req.query.date)).local().format("LL") > tomorrow) {
-                return res.status(400).json({
-                    status : "failed",
-                    message : "Cant update for tomorrow"
                 })
             }
 
@@ -118,18 +120,19 @@ module.exports = {
             const getUser = await users.findOne({
                 where : { id : req.users.id }
             })
-            const newProgres = getUser.dataValues.earlyWeight - weight
+            const newProgres = getUser.dataValues.earlyWeight - req.body.weight
 
             const heightInMeter = getUser.dataValues.height/100
 
-            const newBmi = weight / (heightInMeter ** 2)
+            const newBmi = req.body.weight / (heightInMeter ** 2)
 
             await users.update({
                 progress : newProgres,
                 BMI : Math.round(newBmi)
-            })
+            },
+            {where : { id : req.users.id }})
 
-            res.status(200).json({
+            return res.status(200).json({
                 status: 'Success',
                 message: 'Data update successfully',
             });
