@@ -4,7 +4,7 @@ const Joi = require('joi')
 
 module.exports = {
     getDataById: async (req, res) => {
-        const dateData = moment(new Date()).local();
+        const dateData = moment(new Date()).local().format('LL');
         const dataUserId = req.users.id;
 
         try {
