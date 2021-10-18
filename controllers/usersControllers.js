@@ -72,7 +72,7 @@ module.exports = {
                 userId: createUser.dataValues.id,
                 calConsumed: 0,
                 remainCalSize: body.calorieSize,
-                date: moment(new Date()).local().format("YYYY-MM-D")
+                date: moment.utc(new Date()).local().format("YYYY-MM-D")
             });
 
             const createWeightMeasure = await weightMeasures.create({
@@ -80,7 +80,7 @@ module.exports = {
                 weight: body.weight,
                 waistline: body.waistline,
                 thigh: body.thigh,
-                date: moment(new Date()).local().format("YYYY-MM-D")
+                date: moment.utc(new Date()).local().format("YYYY-MM-D")
             })
 
 

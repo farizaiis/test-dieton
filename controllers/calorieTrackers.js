@@ -4,7 +4,7 @@ const Joi = require('joi')
 
 module.exports = {
     getDataById: async (req, res) => {
-        const dateData = moment(new Date()).local().format("YYYY-M-D");
+        const dateData = moment.utc(new Date()).local().format("YYYY-M-D");
         const dataUserId = req.users.id;
 
         try {
@@ -59,7 +59,7 @@ module.exports = {
                 })
             };
 
-            const today = moment(new Date()).local().format("YYYY-M-D")
+            const today = moment.utc(new Date()).local().format("YYYY-M-D")
 
             const dataCalorieTrack = await calorieTrackers.findOne({
                 where: {
