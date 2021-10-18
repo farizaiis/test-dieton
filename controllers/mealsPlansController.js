@@ -25,9 +25,9 @@ module.exports = {
                 })
             }
 
-            const today = moment(new Date()).local().format("YYYY-MM-DD")
+            const today = moment(new Date()).local().format('LL')
 
-            if(moment(new Date(body.date)).local().format("YYYY-MM-DD") < today) {
+            if(moment(new Date(body.date)).local().format('LL') < today) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Cant post date already passed"
