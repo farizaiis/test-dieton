@@ -57,9 +57,32 @@ module.exports = {
         } 
     },
     getAllFacts : async (req, res) => {
+        try {const limit = parseInt(req.query.record);
+            const page = parseInt(req.query.page);
+            const start = 0 * (page - 1) * limit;
+            const end = page * limit;
+            const GetFacts =  await nutritionFacts.findAndCountAll({
+            limit: limit,
+            offset: start
+            })
 
-        try {
-            const GetFacts = await nutritionFacts.findAll({})
+            let countFiltered = nutritionFacts.count;
+            let pagination = {}
+            pagination.totalRow = nutritionFacts.count;
+            pagination.totalpage = Math.ceil(countFiltered / limit)
+            if (end < countFiltered) {
+                pagination.next = {
+                    page: page + 1,
+                    limit
+                }
+            }
+            if (start > 0) {
+                pagination.prev = {
+                    page: page - 1,
+                    limit
+                }
+            }
+            
             if (!GetFacts) {
                 return res.status(400).json({
                     status: "failed",
