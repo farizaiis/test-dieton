@@ -65,9 +65,6 @@ module.exports = {
         try {
             const today = moment.utc(new Date()).local().format("YYYY-M-D")
 
-            const tomorrow = moment.utc(new Date()).local().subtract(-1, "D").format("YYYY-M-D")
-
-
             if(moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") < today) {
                 return res.status(400).json({
                     status : "failed",
@@ -75,7 +72,7 @@ module.exports = {
                 })
             }
 
-            if(moment.utc(new Date(req.query.date)).local().format('LL') > tomorrow) {
+            if(moment.utc(new Date(req.query.date)).local().format("YYYy-M-D") > today) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Cant update for tomorrow"
