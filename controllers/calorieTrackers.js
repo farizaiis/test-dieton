@@ -102,7 +102,7 @@ module.exports = {
 
             const dataCalorieUser = await calorieTrackers.findOne({
                 where: {
-                    id: req.users.id,
+                    userId: req.users.id,
                     date: today
                 }
             });
