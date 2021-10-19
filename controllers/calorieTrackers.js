@@ -59,7 +59,7 @@ module.exports = {
                 })
             };
 
-            const today = moment.utc(new Date()).local().format("YYYY-M-D")
+            const today = moment.utc(new Date()).local().format("LL")
 
             const dataCalorieTrack = await calorieTrackers.findOne({
                 where: {
