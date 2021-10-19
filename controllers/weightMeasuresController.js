@@ -72,7 +72,7 @@ module.exports = {
                 })
             }
 
-            if(moment.utc(new Date(req.query.date)).local().format("YYYy-M-D") > today) {
+            if(moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") > today) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Cant update for tomorrow"
