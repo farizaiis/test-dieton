@@ -17,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
     weightMeasures.init({
         userId: DataTypes.INTEGER,
         weight: DataTypes.INTEGER,
-        height: DataTypes.INTEGER,
         waistline: DataTypes.INTEGER,
         thigh: DataTypes.INTEGER,
         date: DataTypes.DATEONLY

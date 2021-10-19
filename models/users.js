@@ -21,6 +21,11 @@ module.exports = (sequelize, DataTypes) => {
     email: DataTypes.STRING,
     password: DataTypes.STRING,
     profilePic: DataTypes.STRING,
+    height: DataTypes.INTEGER,
+    progress: DataTypes.INTEGER,
+    earlyWeight: DataTypes.INTEGER,
+    BMI: DataTypes.INTEGER,
+    calorieSize: DataTypes.INTEGER,
     role: DataTypes.ENUM('admin', 'user')
   }, {
     sequelize,

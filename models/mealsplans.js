@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
           as : "listmeals"
         })
         
-      mealsPlans.belongsTo(models.users, {foreignKey: 'userId'})
+      mealsPlans.belongsTo(models.users, {as : 'mealsplans', foreignKey: 'userId'})
     }
   };
   mealsPlans.init({

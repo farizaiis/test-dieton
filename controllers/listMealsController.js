@@ -41,6 +41,13 @@ module.exports = {
                     message : "Cant find the mealsplan"
                 })
             }
+
+            if(cekMealsPlan.dataValues.status == 1){
+                return res.status(400).json({
+                    status : "fail",
+                    message : "Cant add list meals when status has done or passed"
+                })
+            }
             
             const cekFood = await foods.findOne({
                 where: {
@@ -112,6 +119,13 @@ module.exports = {
                     id : cekListMeals.dataValues.mealsPlanId
                 }
             })
+
+            if(cekMealsPlan.dataValues.status == 1) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Cant delete list where status has done"
+                });
+            }
 
             await mealsPlans.update({
                 totalCalAmount : (cekMealsPlan.dataValues.totalCalAmount - cekListMeals.dataValues.calAmount)
@@ -215,6 +229,26 @@ module.exports = {
                 });
             }
 
+            const cekMealsPlan = await mealsPlans.findOne({
+                where : {
+                    id : cekMeals.dataValues.mealsPlanId
+                }
+            })
+
+            if(!cekMealsPlan) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Data not found"
+                });
+            }
+
+            if(cekMealsPlan.dataValues.status == 1) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Cant update list where status has done"
+                });
+            }
+
             const oldCalAmount = cekMeals.dataValues.calAmount
 
             const dataFood = await foods.findOne({
@@ -233,12 +267,6 @@ module.exports = {
 
             const getMeals = await listMeals.findOne({
                 where : { id : req.params.id }
-            })
-
-            const cekMealsPlan = await mealsPlans.findOne({
-                where : {
-                    id : getMeals.dataValues.mealsPlanId
-                }
             })
 
             await mealsPlans.update({

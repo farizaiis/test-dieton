@@ -57,9 +57,32 @@ module.exports = {
         } 
     },
     getAllFacts : async (req, res) => {
+        try {const limit = parseInt(req.query.record);
+            const page = parseInt(req.query.page);
+            const start = 0 * (page - 1) * limit;
+            const end = page * limit;
+            const GetFacts =  await nutritionFacts.findAndCountAll({
+            limit: limit,
+            offset: start
+            })
 
-        try {
-            const GetFacts = await nutritionFacts.findAll({})
+            let countFiltered = nutritionFacts.count;
+            let pagination = {}
+            pagination.totalRow = nutritionFacts.count;
+            pagination.totalpage = Math.ceil(countFiltered / limit)
+            if (end < countFiltered) {
+                pagination.next = {
+                    page: page + 1,
+                    limit
+                }
+            }
+            if (start > 0) {
+                pagination.prev = {
+                    page: page - 1,
+                    limit
+                }
+            }
+            
             if (!GetFacts) {
                 return res.status(400).json({
                     status: "failed",
@@ -104,9 +127,11 @@ module.exports = {
             })
         }
     },
+
     updateFacts : async (req, res) => {
         const body = req.body
         const id = req.params.id
+
         try {
             const schema = Joi.object({
                 poster: Joi.string(),
@@ -130,6 +155,37 @@ module.exports = {
                     errors : check.error["details"].map(({ message }) => message )          
                 })
             }
+
+            const cekArticle = await nutritionFacts.findOne({
+                where : {id: id}
+            })
+
+            if(body.creator) {
+                const cekCreator = await nutritionFacts.findOne({
+                    where : { title : cekArticle.dataValues.title, creator : body.creator }
+                })
+
+                if(cekCreator) {
+                    return res.status(400).json({
+                        status : "failed",
+                        message : "Can't post same nutrition fact"
+                    })
+                }
+            }
+
+            if(body.title) {
+                const cekTitle = await nutritionFacts.findOne({
+                    where : { title : body.title, creator : cekArticle.dataValues.creator }
+                })
+
+                if(cekTitle) {
+                    return res.status(400).json({
+                        status : "failed",
+                        message : "Can't post same nutrition fact"
+                    })
+                }
+            }
+
             const editFact = await nutritionFacts.update(
                 {
                     [req.file ? "poster" : null]: req.file ? req.file.path : null,
@@ -140,16 +196,22 @@ module.exports = {
                 },{
                     where: { id: id }
                 })
+
             if (!editFact) {
                 return res.status(400).json({
                     status: "failed",
                     message: "Data not found"
                 })
             }
+
+            const dataEdit = await nutritionFacts.findOne({
+                where : {id : id}
+            })
+
             return res.status(200).json({
                 status: "success",
                 message: "Update nutrition fact success",
-                data: editFact
+                data: dataEdit
             })
         } catch (error) {
             return res.status(500).json({
@@ -158,6 +220,7 @@ module.exports = {
             })
         } 
     },
+    
     deleteFacts : async (req, res) => {
         const id = req.params.id
         try {
