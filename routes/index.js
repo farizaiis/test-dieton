@@ -9,6 +9,7 @@ const usersRouter = require ('./usersRouter')
 const calorieRouter = require ('./calorieTrackersRouter')
 const exercisesRouter = require ('./exercisesRouter')
 const exercisesPlansRouter = require ('./exercisesPlansRouter')
+const listExercisesRouter = require ('./listExercisesRouter')
 
 router.use('/facts', factsRouter)
 router.use('/users', usersRouter)
@@ -19,5 +20,6 @@ router.use('/wms', weightMeasures)
 router.use('/calorietrackers', calorieRouter)
 router.use('/exercises', exercisesRouter)
 router.use('/exercisesplan', exercisesPlansRouter)
+router.use('/listexercise', listExercisesRouter)
 
 module.exports = router

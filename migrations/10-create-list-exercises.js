@@ -29,11 +29,14 @@ module.exports = {
       long: {
         type: Sequelize.STRING
       },
+      time : {
+        type: Sequelize.ENUM('Hours', 'Minutes')
+      },
       calAmount: {
         type: Sequelize.INTEGER
       },
       alert: {
-        type: Sequelize.DATE
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,

@@ -19,8 +19,9 @@ module.exports = (sequelize, DataTypes) => {
     exerciseId: DataTypes.INTEGER,
     exercisePlanId: DataTypes.INTEGER,
     long: DataTypes.STRING,
+    time: DataTypes.STRING,
     calAmount: DataTypes.INTEGER,
-    alert: DataTypes.DATE
+    alert: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'listExercises',
