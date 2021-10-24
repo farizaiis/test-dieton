@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "db:migrate": "sequelize db:migrate",
@@ -45,5 +45,10 @@
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.7.0",
     "sequelize-cli": "^6.2.0"
+  },
+  "devDependencies": {
+    "jest": "^27.3.1",
+    "mysql2": "^2.3.2",
+    "supertest": "^6.1.6"
   }
 }
