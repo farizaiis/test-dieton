@@ -55,11 +55,11 @@ module.exports = {
                 return res.status(400).json({
                     status: "failed",
                     message: "Bad Request",
-                    errors: error["details"].map(({ message }) => message)
+                    errors: check.error["details"].map(({ message }) => message)
                 })
             };
 
-            const today = moment.utc(new Date()).local().format("LL")
+            const today = moment.utc(new Date()).local().format('LL')
 
             const dataCalorieTrack = await calorieTrackers.findOne({
                 where: {
@@ -67,6 +67,7 @@ module.exports = {
                     date: today
                 }
             })
+
 
             const dataCalorieTrack2 = await calorieTrackers.update({
                 remainCalSize: body.calorieSize - dataCalorieTrack.calConsumed

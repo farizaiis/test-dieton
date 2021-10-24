@@ -1,20 +1,18 @@
 const Joi = require('joi').extend(require('@joi/date'))
 const moment = require('moment')
-const { mealsPlans, foods, calorieTrackers, users } = require('../models')
+const { exercisesPlans, exercises, calorieTrackers, users } = require('../models')
 
 module.exports = {
-    postMealsPlans : async (req, res) => {
+    postExercisesPlans : async (req, res) => {
         const body = req.body
         try {
             const schema = Joi.object({
                 userId : Joi.number(),
-                mealsTime : Joi.string(),
                 date : Joi.date().format("YYYY-M-D").required()
             })
 
             const check = schema.validate({
                 userId : req.users.id,
-                mealsTime : body.mealsTime,
                 date : body.date
                 }, { abortEarly : false });
 
@@ -35,22 +33,21 @@ module.exports = {
                 })
             }
 
-            const checkuser = await mealsPlans.findOne({
+            const checkuser = await exercisesPlans.findOne({
                 where: {
                     userId : req.users.id,
-                    date : body.date,
-                    mealsTime : body.date
+                    date : body.date
                 }
             })
 
             if(checkuser) {
                 return res.status(400).json({
                     status: "fail",
-                    message: "Cant post same type of MealsPlan at same day",
+                    message: "Cant post exercise plans at same day",
                 });
             }
 
-            await mealsPlans.create({
+            await exercisesPlans.create({
                 userId : req.users.id,
                 mealsTime : body.mealsTime,
                 date : body.date
@@ -73,21 +70,17 @@ module.exports = {
                 })
             }
 
-            const cekData = await mealsPlans.findAll({
+            const cekData = await exercisesPlans.findAll({
                 where : { userId : req.users.id, date : body.date},
                 attributes : { exclude : ["id", "createdAt", "updatedAt"] }
             })
 
             return res.status(200).json({
                         status: "success",
-                        message: "Succesfully input new MealsPlan",
+                        message: "Succesfully input new exercise plans",
                         datauser : cekData
                     });
-            
         } catch (error) {
-            if (error.name === "SequelizeDatabaseError" && error.parent.routine === "enum_in") {
-                return res.status(400).json({ status : "failed", message: "Breakfast, Lunch, or Dinner only for meals time" })
-            }
             return res.status(500).json({
             status: "failed",
             message: "Internal Server Error",
@@ -100,12 +93,12 @@ module.exports = {
             const dates = req.query.date
 
             if(!dates) {
-                const getByUserId = await mealsPlans.findAll({
+                const getByUserId = await exercisesPlans.findAll({
                     where : { userId : req.users.id },
                     attributes : { exclude : ["id", "createdAt", "updatedAt"] },
                     include : [{
-                        model : foods,
-                        as : "listmeals"
+                        model : exercises,
+                        as : "listexercises"
                 }]
                 })
 
@@ -118,17 +111,17 @@ module.exports = {
 
                 return res.status(200).json({
                     status: "success",
-                    message: "Success get data Meals Plan",
+                    message: "Success get data Exercise Plan",
                     data: getByUserId
                 })
             }
 
-            const getByDate = await mealsPlans.findAll({
+            const getByDate = await exercisesPlans.findAll({
                 where : { userId : req.users.id, date : dates },
                 attributes : { exclude : ["id", "createdAt", "updatedAt"] },
                 include : [{
-                    model : foods,
-                    as : "listmeals"
+                    model : exercises,
+                    as : "listexercises"
                 }]
             })
 
@@ -141,7 +134,7 @@ module.exports = {
 
             return res.status(200).json({
                 status: "success",
-                message: "Success get data Meals Plan",
+                message: "Success get data Exercise Plan",
                 data: getByDate
             })
         } catch (error) {
@@ -154,7 +147,7 @@ module.exports = {
 
     updateStatus : async (req, res) => {
         try { 
-            const cekMealsPlans = await mealsPlans.findOne({
+            const cekExercisesPlans = await exercisesPlans.findOne({
                 where : {
                     userId : req.users.id,
                     mealsTime : req.query.type,
@@ -169,21 +162,21 @@ module.exports = {
                 }
             })
 
-            if(!cekMealsPlans || !cekCalorieTracker) {
+            if(!cekExercisesPlans || !cekCalorieTracker) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Data not found"
                 })
             }
 
-            if(cekMealsPlans.dataValues.status == 1){
+            if(cekExercisesPlans.dataValues.status == 1){
                 return res.status(400).json({
                     status : "failed",
-                    message : "the Meals Plan Already update"
+                    message : "the Exercise Plan Already update"
                 })
             }
 
-            await mealsPlans.update({
+            await exercisesPlans.update({
                 status : 1
             },
             {where : {
@@ -193,7 +186,7 @@ module.exports = {
             }}
             );
 
-            const dataMealsPlans = await mealsPlans.findOne({
+            const dataExercisesPlans = await exercisesPlans.findOne({
                 where : {
                     userId : req.users.id,
                     mealsTime : req.query.type,
@@ -210,8 +203,8 @@ module.exports = {
 
             await calorieTrackers.update(
             {
-                calConsumed : getCalTrack.dataValues.calConsumed + dataMealsPlans.dataValues.totalCalAmount,
-                remainCalSize : getCalTrack.dataValues.remainCalSize - dataMealsPlans.dataValues.totalCalAmount
+                calConsumed : getCalTrack.dataValues.calConsumed + dataExercisesPlans.dataValues.totalCalAmount,
+                remainCalSize : getCalTrack.dataValues.remainCalSize - dataExercisesPlans.dataValues.totalCalAmount
             },
             {
                 where : {
@@ -223,7 +216,7 @@ module.exports = {
             return res.status(200).json({
                         status: "success",
                         message: "Succesfully Update Status",
-                        data : dataMealsPlans
+                        data : dataExercisesPlans
                     });
             
         } catch (error) {
@@ -235,15 +228,15 @@ module.exports = {
         }
     },
 
-    deleteMealsPlans : async (req, res) => {
+    deleteExercisesPlans : async (req, res) => {
         try {
-            const deleteMealsPlans = await mealsPlans.destroy({
+            const deleteExercisesPlans = await exercisesPlans.destroy({
                 where : {
                     id : req.params.id
                 }
             });
 
-            if(!deleteMealsPlans) {
+            if(!deleteExercisesPlans) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Data not found"
