@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     long: DataTypes.STRING,
     time: DataTypes.STRING,
     calAmount: DataTypes.INTEGER,
-    alert: DataTypes.STRING
+    alert: DataTypes.TIME
   }, {
     sequelize,
     modelName: 'listExercises',
