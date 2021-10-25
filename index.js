@@ -13,7 +13,7 @@ app.use('/v1', Router)
 app.get("/", (req,res)=>{
     res.json({
         message:"server running",
-        serverTime: moment(new Date()).local()
+        serverTime: moment.utc(new Date()).local()
     })
 })
 
