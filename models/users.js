@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     email: DataTypes.STRING,
     password: DataTypes.STRING,
     profilePic: DataTypes.STRING,
+    cover: DataTypes.STRING,
     height: DataTypes.INTEGER,
     progress: DataTypes.INTEGER,
     earlyWeight: DataTypes.INTEGER,

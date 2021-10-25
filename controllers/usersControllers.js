@@ -15,7 +15,6 @@ module.exports = {
                 fullName: Joi.string().required(),
                 email: Joi.string().required(),
                 password: Joi.string().min(6).max(12).required(),
-                profilePic: Joi.string(),
                 calorieSize: Joi.number().min(1000).max(2000).required(),
                 weight: Joi.number().required(),
                 height: Joi.number().required(),
@@ -27,7 +26,6 @@ module.exports = {
                 fullName: body.fullName,
                 email: body.email,
                 password: body.password,
-                profilePic: req.file ? req.file.path : "profilePic",
                 calorieSize: body.calorieSize,
                 weight: body.weight,
                 height: body.height,
@@ -61,6 +59,7 @@ module.exports = {
                 email: body.email,
                 password: encrypt(body.password),
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
+                [req.file ? "cover" : null]: req.file ? req.file.path : null,
                 height: body.height,
                 earlyWeight: body.weight,
                 calorieSize: body.calorieSize,
@@ -230,12 +229,14 @@ module.exports = {
                 fullName: Joi.string(),
                 password: Joi.string().min(6).max(12),
                 profilePic: Joi.string(),
+                cover: Joi.string()
             })
 
             const check = schema.validate({
                 fullName: body.fullName,
                 password: body.password,
-                profilePic: req.file ? req.file.path : "profilePic"
+                profilePic: req.file ? req.file.path : "profilePic",
+                cover: req.file ? req.file.path : "cover"
             }, { abortEarly: false });
 
             if (check.error) {
@@ -287,6 +288,7 @@ module.exports = {
             const updateUser = await users.update({
                 fullName: body.fullName,
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
+                [req.file ? "cover" : null]: req.file ? req.file.path : null
             },
                 {
                     where: {
