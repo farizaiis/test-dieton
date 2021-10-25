@@ -14,7 +14,7 @@ module.exports = {
                 long : Joi.number().min(1),
                 time : Joi.string(),
                 calAmount : Joi.number(),
-               // alert : Joi.date().format("hh:mm")
+                alert : Joi.string().regex(/^([0-9]{2})\:([0-9]{2})$/)
             })
 
             const check = schema.validate({
