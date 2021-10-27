@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return await queryInterface.bulkInsert('foods', [
+    return await queryInterface.bulkInsert('exercises', [
       {
         name: 'Pilates',
         calorie: 256,
@@ -27,7 +27,7 @@ module.exports = {
       {
         name: 'Basket',
         calorie: 250,
-        logo: 'https://res.cloudinary.com/dejongos/image/upload/v1635030664/logoExercise/basket_vzyjfq.png',
+        logoExercise: 'https://res.cloudinary.com/dejongos/image/upload/v1635030664/logoExercise/basket_vzyjfq.png',
         createdAt : new Date(),
         updatedAt : new Date()
       },
