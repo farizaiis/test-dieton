@@ -27,7 +27,8 @@ module.exports = (sequelize, DataTypes) => {
     earlyWeight: DataTypes.INTEGER,
     BMI: DataTypes.INTEGER,
     calorieSize: DataTypes.INTEGER,
-    role: DataTypes.ENUM('admin', 'user')
+    role: DataTypes.ENUM('admin', 'user'),
+    isVerified: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'users',

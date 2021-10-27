@@ -11,6 +11,8 @@ router.post('/signin', users.signin);
 router.delete('/delete/:id', loginCheck, users.delete);
 router.put('/update', loginCheck, uploadProfilePic("profilePic"), uploadCover("cover"), users.updateUserProfile);
 router.get('/userprofile', loginCheck, users.getUserById);
-router.get('/', loginCheck, authAdmin, users.getAllUser)
+router.get('/', loginCheck, authAdmin, users.getAllUser);
+router.put('/verifiedaccount/:id', users.verifiedAccount);
+router.put('/resetpassword', users.forgotPass);
 
 module.exports = router;
