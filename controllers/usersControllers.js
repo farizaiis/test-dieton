@@ -55,7 +55,7 @@ module.exports = {
                 })
             };
 
-            const createUser = await users.create({
+            const userCheck = await users.create({
                 fullName: body.fullName,
                 email: body.email,
                 password: encrypt(body.password),
@@ -69,14 +69,14 @@ module.exports = {
             });
 
             const createCalorieSize = await calorieTrackers.create({
-                userId: createUser.dataValues.id,
+                userId: userCheck.dataValues.id,
                 calConsumed: 0,
                 remainCalSize: body.calorieSize,
                 date: moment(new Date()).local().format("YYYY-M-D")
             });
 
             const createWeightMeasure = await weightMeasures.create({
-                userId: createUser.dataValues.id,
+                userId: userCheck.dataValues.id,
                 weight: body.weight,
                 waistline: body.waistline,
                 thigh: body.thigh,
@@ -85,9 +85,9 @@ module.exports = {
 
 
             const payload = {
-                role: createUser.dataValues.role,
-                email: createUser.dataValues.email,
-                id: createUser.dataValues.id
+                role: userCheck.dataValues.role,
+                email: userCheck.dataValues.email,
+                id: userCheck.dataValues.id
             };
 
             const token = generateToken(payload);
@@ -345,7 +345,7 @@ module.exports = {
                   <!-- end body -->
                 
                 </body>
-                </html>` 
+                </html>`
             };
 
             transporter.sendMail(mailOptions, function (error, info) {
@@ -360,7 +360,7 @@ module.exports = {
                 status: "success",
                 message: "sign up successfully, and please verified your account first",
                 token: token,
-                dataUser: createUser,
+                dataUser: userCheck,
                 dataCalorie: createCalorieSize,
                 dataWeight: createWeightMeasure
             });
@@ -973,7 +973,7 @@ module.exports = {
                   <!-- end body -->
                 
                 </body>
-                </html>` 
+                </html>`
             };
 
             transporter.sendMail(mailOptions, function (error, info) {
@@ -990,6 +990,48 @@ module.exports = {
             });
         } catch (error) {
             console.log("🚀 ~ file: usersControllers.js ~ line 499 ~ forgotPass:async ~ error", error)
+            return res.status(500).json({
+                status: "failed",
+                message: "Internal Server Error",
+            });
+        }
+    },
+
+    googleSignIn: async (req, res) => {
+        let payload;
+        try {
+            const userCheck = await users.findOne({
+                where: {
+                    email: req.user._json.email
+                }
+            })
+
+            if (userCheck) {
+                payload = {
+                    role: userCheck.dataValues.role,
+                    email: userCheck.dataValues.email,
+                    id: userCheck.dataValues.id
+                }
+            } else {
+                const createProfile = await users.create({
+                    fullName: req.user._json.name,
+                    email: req.user._json.email,
+                    profilePic: req.user._json.picture,
+                    password: "undefined",
+                    isVerified: true
+                });
+                payload = {
+                    role: createProfile.dataValues.role,
+                    email: createProfile.dataValues.email,
+                    id: createProfile.dataValues.id
+                }
+            };
+
+            const token = generateToken(payload)
+
+            return res.redirect('' + token)
+
+        } catch (error) {
             return res.status(500).json({
                 status: "failed",
                 message: "Internal Server Error",
