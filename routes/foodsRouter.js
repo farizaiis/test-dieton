@@ -6,7 +6,7 @@ const { authAdmin } = require('../middlewares/authorization')
 
 router.get('/', loginCheck, foods.getAllFoods)
 router.get('/:id', loginCheck, foods.getOneFoods)
-router.post('/', loginCheck,  foods.createFoods)
+router.post('/', loginCheck, authAdmin, foods.createFoods)
 router.put('/:id', loginCheck, authAdmin, foods.updateFoods)
 router.delete('/:id', loginCheck, authAdmin, foods.deleteFoods)
 
