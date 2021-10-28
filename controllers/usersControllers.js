@@ -5,6 +5,7 @@ const moment = require('moment');
 const { generateToken } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
 const nodemailer = require('nodemailer');
+const randomstring = require('randomstring');    
 
 
 module.exports = {
@@ -273,7 +274,7 @@ module.exports = {
                                     <table border="0" cellpadding="0" cellspacing="0">
                                       <tr>
                                         <td align="center" bgcolor="#1a82e2" style="border-radius: 6px;">
-                                          <a href="https://localhost:8000/users/verifiedaccount/" target="_blank" style="display: inline-block; padding: 16px 36px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">Verified Your Account</a>
+                                          <a href="http://localhost:8000/v1/users/verifiedaccount/${payload.id}" target="_blank" style="display: inline-block; padding: 16px 36px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">Verified Your Account</a>
                                         </td>
                                       </tr>
                                     </table>
@@ -358,7 +359,7 @@ module.exports = {
 
             return res.status(200).json({
                 status: "success",
-                message: "sign up successfully, and please verified your account first",
+                message: "sign up successfully, and please check your email to verified",
                 token: token,
                 dataUser: userCheck,
                 dataCalorie: createCalorieSize,
@@ -656,19 +657,27 @@ module.exports = {
     verifiedAccount: async (req, res) => {
         const id = req.params.id
 
-        await users.update({
-            isVerified: true
-        },
-            {
-                where: {
-                    id: id
-                }
-            })
+        try {
+            await users.update({
+                isVerified: true
+            },
+                {
+                    where: {
+                        id: id
+                    }
+                })
 
-        return res.status(200).json({
-            status: "success",
-            message: "successfully verified, please sign in again"
-        })
+            return res.status(200).json({
+                status: "success",
+                message: "successfully verified, please sign in again"
+            })
+        } catch (error) {
+            return res.status(500).json({
+                status: "failed",
+                message: "Internal Server Error",
+            });
+        }
+
     },
 
     forgotPass: async (req, res) => {
@@ -711,8 +720,13 @@ module.exports = {
                 })
             }
 
+            const passReset = randomstring.generate({
+                length: 12,
+                charset: 'hex'
+            });
+
             const resetPass = await users.update({
-                password: encrypt("dietOnResetPassword")
+                password: encrypt(passReset)
             },
                 {
                     where: {
@@ -887,7 +901,7 @@ module.exports = {
                           <!-- start copy -->
                           <tr>
                             <td align="left" bgcolor="#ffffff" style="padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">
-                              <p style="margin: 0;">Here is your reset password, please log in using this password. If you didn't request this, you can safely delete this email.</p>
+                              <p style="margin: 0;">Here is your new password, please log in using this password. If you didn't request this, you can safely delete this email.</p>
                             </td>
                           </tr>
                           <!-- end copy -->
@@ -901,7 +915,7 @@ module.exports = {
                                     <table border="0" cellpadding="0" cellspacing="0">
                                       <tr>
                                         <td align="center" bgcolor="#1a82e2" style="border-radius: 6px;">
-                                          <p  target="_blank" style="display: inline-block; padding: 16px 36px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">Password</p>
+                                          <p  target="_blank" style="display: inline-block; padding: 16px 36px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">${passReset}</p>
                                         </td>
                                       </tr>
                                     </table>
@@ -986,7 +1000,7 @@ module.exports = {
 
             return res.status(200).json({
                 status: "success",
-                message: "successfully reset password"
+                message: "successfully reset password, and please check email for your new password"
             });
         } catch (error) {
             console.log("🚀 ~ file: usersControllers.js ~ line 499 ~ forgotPass:async ~ error", error)
@@ -1018,7 +1032,27 @@ module.exports = {
                     email: req.user._json.email,
                     profilePic: req.user._json.picture,
                     password: "undefined",
+                    height: 0,
+                    earlyWeight: 0,
+                    calorieSize: 0,
+                    progress: 0,
+                    BMI: 0,
                     isVerified: true
+                })
+                
+                const createCalorie = await calorieTrackers.create({
+                    userId: createProfile.dataValues.id,
+                    calConsumed: 0,
+                    remainCalSize: 0,
+                    data: moment(new Date()).local().format("YYYY-M-D")
+                })
+                
+                const createWeight = await weightMeasures.create({
+                    userId: createProfile.dataValues.id,
+                    weight: 0,
+                    waistline: 0,
+                    thigh: 0,
+                    date: moment(new Date()).local().format("YYYY-M-D")
                 });
                 payload = {
                     role: createProfile.dataValues.role,
