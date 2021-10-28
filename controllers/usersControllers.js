@@ -4,7 +4,8 @@ const Joi = require('joi');
 const moment = require('moment');
 const { generateToken } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
-const nodemailer = require('nodemailer')
+const nodemailer = require('nodemailer');
+const hbs = require('nodemailer-express-handlebars');
 
 
 module.exports = {
@@ -105,11 +106,16 @@ module.exports = {
                 }
             });
 
+            transporter.use('compile', hbs({
+                viewEngine: 'express-handlebars',
+                viewPath: '../backenddieton/'
+            }))
+
             const mailOptions = {
                 from: 'dieton281@gmail.com',
                 to: body.email,
                 subject: 'Verified Your Email',
-                text: `Please verified your account by click this link, https://localhost:8000/v1/users/verifiedaccount/${payload.id}`
+                template: 'main' 
             };
 
             transporter.sendMail(mailOptions, function (error, info) {
