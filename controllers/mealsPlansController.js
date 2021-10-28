@@ -39,7 +39,7 @@ module.exports = {
                 where: {
                     userId : req.users.id,
                     date : body.date,
-                    mealsTime : body.date
+                    mealsTime : body.mealsTime
                 }
             })
 
