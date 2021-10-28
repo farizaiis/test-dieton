@@ -44,13 +44,28 @@ module.exports = {
             }
 
             const createWnm = await weightMeasures.create({
+                userId : req.users.id,
                 weight: weight,
                 waistline: waistline,
                 thigh: thigh,
                 date: today
-            }, {
-                where: { userId: req.users.id, date: req.query.date }
-            });
+            })
+
+            const getUser = await users.findOne({
+                where : { id : req.users.id }
+            })
+            const newProgres = getUser.dataValues.earlyWeight - body.weight
+
+            const heightInMeter = getUser.dataValues.height/100
+
+            const newBmi = body.weight / (heightInMeter ** 2)
+
+            await users.update({
+                progress : newProgres,
+                BMI : Math.round(newBmi)
+            },
+            {where : { id : req.users.id }})
+            
 
             return res.status(200).json({
                 status: 'Success',
@@ -62,7 +77,6 @@ module.exports = {
             
         }
     },
-
 
     getWeight: async(req, res) => {
         try {
