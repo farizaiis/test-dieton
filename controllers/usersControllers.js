@@ -4,6 +4,8 @@ const Joi = require('joi');
 const moment = require('moment');
 const { generateToken } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
+const nodemailer = require('nodemailer');
+const hbs = require('nodemailer-express-handlebars');
 
 
 module.exports = {
@@ -15,7 +17,6 @@ module.exports = {
                 fullName: Joi.string().required(),
                 email: Joi.string().required(),
                 password: Joi.string().min(6).max(12).required(),
-                profilePic: Joi.string(),
                 calorieSize: Joi.number().min(1000).max(2000).required(),
                 weight: Joi.number().required(),
                 height: Joi.number().required(),
@@ -27,7 +28,6 @@ module.exports = {
                 fullName: body.fullName,
                 email: body.email,
                 password: body.password,
-                profilePic: req.file ? req.file.path : "profilePic",
                 calorieSize: body.calorieSize,
                 weight: body.weight,
                 height: body.height,
@@ -61,6 +61,7 @@ module.exports = {
                 email: body.email,
                 password: encrypt(body.password),
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
+                [req.file ? "cover" : null]: req.file ? req.file.path : null,
                 height: body.height,
                 earlyWeight: body.weight,
                 calorieSize: body.calorieSize,
@@ -92,9 +93,42 @@ module.exports = {
 
             const token = generateToken(payload);
 
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: 'dieton281@gmail.com',
+                    pass: 'adm1nDIet'
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            });
+
+            transporter.use('compile', hbs({
+                viewEngine: 'express-handlebars',
+                viewPath: '../backenddieton/'
+            }))
+
+            const mailOptions = {
+                from: 'dieton281@gmail.com',
+                to: body.email,
+                subject: 'Verified Your Email',
+                template: 'main' 
+            };
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log('Email sent: ' + info.response)
+                }
+            });
+
             return res.status(200).json({
                 status: "success",
-                message: "sign up successfully",
+                message: "sign up successfully, and please verified your account first",
                 token: token,
                 dataUser: createUser,
                 dataCalorie: createCalorieSize,
@@ -137,6 +171,13 @@ module.exports = {
                     email: body.email
                 }
             })
+
+            if (userEmailData.dataValues.isVerified === false) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "please verified your email first"
+                })
+            }
 
             if (!userEmailData) {
                 return res.status(400).json({
@@ -230,12 +271,14 @@ module.exports = {
                 fullName: Joi.string(),
                 password: Joi.string().min(6).max(12),
                 profilePic: Joi.string(),
+                cover: Joi.string()
             })
 
             const check = schema.validate({
                 fullName: body.fullName,
                 password: body.password,
-                profilePic: req.file ? req.file.path : "profilePic"
+                profilePic: req.file ? req.file.path : "profilePic",
+                cover: req.file ? req.file.path : "cover"
             }, { abortEarly: false });
 
             if (check.error) {
@@ -287,6 +330,7 @@ module.exports = {
             const updateUser = await users.update({
                 fullName: body.fullName,
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
+                [req.file ? "cover" : null]: req.file ? req.file.path : null
             },
                 {
                     where: {
@@ -376,6 +420,114 @@ module.exports = {
                 status: "failed",
                 message: "Internal Server Error"
             })
+        }
+    },
+
+    verifiedAccount: async (req, res) => {
+        const id = req.params.id
+
+        await users.update({
+            isVerified: true
+        },
+            {
+                where: {
+                    id: id
+                }
+            })
+
+        return res.status(200).json({
+            status: "success",
+            message: "successfully verified, please sign in again"
+        })
+    },
+
+    forgotPass: async (req, res) => {
+        const body = req.body
+
+        try {
+            const schema = Joi.object({
+                email: Joi.string().required(),
+            })
+
+            const check = schema.validate({
+                email: body.email
+            }, { abortEarly: false });
+
+            if (check.error) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "bad request",
+                    error: check.error["details"].map(({ message }) => message)
+                });
+            }
+
+            const checkUser = await users.findOne({
+                where: {
+                    email: body.email
+                }
+            })
+
+            if (!checkUser) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "please register first"
+                })
+            }
+
+            if (checkUser.dataValues.isVerified === false) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "please verified your account first"
+                })
+            }
+
+            const resetPass = await users.update({
+                password: encrypt("dietOnResetPassword")
+            },
+                {
+                    where: {
+                        email: body.email
+                    }
+                })
+
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: 'dieton281@gmail.com',
+                    pass: 'adm1nDIet'
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            });
+
+            const mailOptions = {
+                from: 'dieton281@gmail.com',
+                to: body.email,
+                subject: 'Your Default Password',
+                text: "password: dietOnResetPassword"
+            };
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log('Email sent: ' + info.response)
+                }
+            });
+
+            return res.status(200).json({
+                status: "success",
+                message: "successfully reset password"
+            });
+        } catch (error) {
+            console.log("🚀 ~ file: usersControllers.js ~ line 499 ~ forgotPass:async ~ error", error)
+            return res.status(500).json({
+                status: "failed",
+                message: "Internal Server Error",
+            });
         }
     }
 };

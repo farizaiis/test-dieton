@@ -21,6 +21,10 @@ module.exports = {
         type: Sequelize.STRING,
         defaultValue: "https://res.cloudinary.com/dejongos/image/upload/v1634276426/profilePic/default.png"
       },
+      cover: {
+        type: Sequelize.STRING,
+        defaultValue: "https://res.cloudinary.com/dejongos/image/upload/v1635134209/cover/defaultCover_pzsimp.png"
+      },
       height: {
         type: Sequelize.INTEGER
       },
@@ -39,6 +43,10 @@ module.exports = {
       role: {
         type: Sequelize.ENUM('admin', 'user'),
         defaultValue: 'user'
+      },
+      isVerified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
       createdAt: {
         allowNull: false,
