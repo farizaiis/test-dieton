@@ -4,6 +4,66 @@ const moment = require('moment')
 
 
 module.exports = {
+    postWeight: async(rq, res) => {
+        const body = req.body
+        try {
+            const today = moment.utc(new Date()).local().format("YYYY-M-D")
+
+            if(moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") < today) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Cant Create date already passed"
+                })
+            }
+
+            if(moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") > today) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Cant Create for tomorrow"
+                })
+            }
+
+            const schema = Joi.object({
+                weight: Joi.number().required(),
+                waistline: Joi.number().required(),
+                thigh: Joi.number().required()
+            })
+
+            const cekInput = schema.validate({
+                weight: weight,
+                waistline: waistline,
+                thigh: thigh
+            }, { abortEarly: false })
+
+            if (cekInput.error) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "Bad Request",
+                    errors: cekInput.error["details"].map(({ message }) => message)
+                })
+            }
+
+            const createWnm = await weightMeasures.create({
+                weight: weight,
+                waistline: waistline,
+                thigh: thigh,
+                date: today
+            }, {
+                where: { userId: req.users.id, date: req.query.date }
+            });
+
+            return res.status(200).json({
+                status: 'Success',
+                message: 'Data update successfully',
+                data : createWnm
+            })
+
+        } catch (error) {
+            
+        }
+    },
+
+
     getWeight: async(req, res) => {
         try {
             const dates = req.query.date
@@ -20,26 +80,15 @@ module.exports = {
                 });
             }
 
-
-
             const allData = await weightMeasures.findOne({
                 attributes: { exclude: ['createdAt', 'updatedAt'] },
                 where: { date: dates, userId: req.users.id }
             });
 
             if (!allData) {
-                const newData = await weightMeasures.create({
-                    userId : req.users.id,
-                    weight: 0,
-                    waistline: 0,
-                    thigh: 0,
-                    date: dates
-                })
-                
-                return res.status(200).json({
-                    status: 'Success',
-                    message: 'Data retrieved successfully',
-                    data: newData
+                return res.status(400).json({
+                    status: 'failed',
+                    message: 'Data not Found '
                 });
             }
 
