@@ -98,8 +98,8 @@ module.exports = {
                 port: 465,
                 secure: true,
                 auth: {
-                    user: 'dieton281@gmail.com',
-                    pass: 'adm1nDIet'
+                    user: process.env.EMAIL_ADMIN,
+                    pass: process.env.PASS_ADMIN
                 },
                 tls: {
                     rejectUnauthorized: false
@@ -107,7 +107,7 @@ module.exports = {
             });
 
             const mailOptions = {
-                from: 'dieton281@gmail.com',
+                from: process.env.EMAIL_ADMIN,
                 to: body.email,
                 subject: 'Verified Your Email',
                 html: `<!DOCTYPE html>
@@ -739,8 +739,8 @@ module.exports = {
                 port: 465,
                 secure: true,
                 auth: {
-                    user: 'dieton281@gmail.com',
-                    pass: 'adm1nDIet'
+                    user: process.env.EMAIL_ADMIN,
+                    pass: process.env.PASS_ADMIN
                 },
                 tls: {
                     rejectUnauthorized: false
@@ -748,7 +748,7 @@ module.exports = {
             });
 
             const mailOptions = {
-                from: 'dieton281@gmail.com',
+                from: process.env.EMAIL_ADMIN,
                 to: body.email,
                 subject: 'Reset Password',
                 html: `<!DOCTYPE html>
