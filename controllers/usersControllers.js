@@ -403,13 +403,6 @@ module.exports = {
                 }
             })
 
-            if (userEmailData.dataValues.isVerified === false) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "please verified your email first"
-                })
-            }
-
             if (!userEmailData) {
                 return res.status(400).json({
                     status: "failed",
@@ -423,6 +416,13 @@ module.exports = {
                 return res.status(400).json({
                     status: "failed",
                     message: "wrong password"
+                })
+            }
+
+            if (userEmailData.dataValues.isVerified === false) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "please verified your email first"
                 })
             }
 
@@ -441,6 +441,7 @@ module.exports = {
             })
 
         } catch (error) {
+            console.log("🚀 ~ file: usersControllers.js ~ line 444 ~ signin: ~ error", error)
             return res.status(500).json({
                 status: "failed",
                 message: "internal server error"
@@ -658,6 +659,20 @@ module.exports = {
         const id = req.params.id
 
         try {
+
+            const checkUser = await users.findOne({
+              where: {
+                id: id
+              }
+            })
+
+            if (!checkUser) {
+              return res.status(400).json({
+                status: "failed",
+                message: "data not found"
+              })
+            }
+            
             await users.update({
                 isVerified: true
             },
