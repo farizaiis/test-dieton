@@ -4,35 +4,39 @@ const moment = require('moment')
 
 
 module.exports = {
-    postWeight: async(rq, res) => {
+    postWeight: async(req, res) => {
         const body = req.body
         try {
             const today = moment.utc(new Date()).local().format("YYYY-M-D")
 
-            if(moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") < today) {
+            if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") < today) {
                 return res.status(400).json({
-                    status : "failed",
-                    message : "Cant Create date already passed"
+                    status: "failed",
+                    message: "Cant Create date already passed"
                 })
             }
 
-            if(moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") > today) {
+            if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") > today) {
                 return res.status(400).json({
-                    status : "failed",
-                    message : "Cant Create for tomorrow"
+                    status: "failed",
+                    message: "Cant Create for tomorrow"
                 })
             }
 
             const schema = Joi.object({
+                userId: Joi.number(),
                 weight: Joi.number().required(),
                 waistline: Joi.number().required(),
-                thigh: Joi.number().required()
+                thigh: Joi.number().required(),
+                date: Joi.date().required().format("YYYY-M-D")
             })
 
             const cekInput = schema.validate({
-                weight: weight,
-                waistline: waistline,
-                thigh: thigh
+                userId: req.users.id,
+                weight: body.weight,
+                waistline: body.waistline,
+                thigh: body.thigh,
+                date: body.date
             }, { abortEarly: false })
 
             if (cekInput.error) {
@@ -43,38 +47,49 @@ module.exports = {
                 })
             }
 
+            const cekData = await weightMeasures.findOne({
+                where: { userId: req.users.id, date: body.date }
+            })
+
+
+            if (cekData) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "Can't duplicate date"
+                })
+            }
+
             const createWnm = await weightMeasures.create({
-                userId : req.users.id,
-                weight: weight,
-                waistline: waistline,
-                thigh: thigh,
-                date: today
+                userId: req.users.id,
+                weight: body.weight,
+                waistline: body.waistline,
+                thigh: body.thigh,
+                date: body.date
             })
 
             const getUser = await users.findOne({
-                where : { id : req.users.id }
+                where: { id: req.users.id }
             })
             const newProgres = getUser.dataValues.earlyWeight - body.weight
 
-            const heightInMeter = getUser.dataValues.height/100
+            const heightInMeter = getUser.dataValues.height / 100
 
             const newBmi = body.weight / (heightInMeter ** 2)
 
             await users.update({
-                progress : newProgres,
-                BMI : Math.round(newBmi)
-            },
-            {where : { id : req.users.id }})
-            
+                progress: newProgres,
+                BMI: Math.round(newBmi)
+            }, { where: { id: req.users.id } })
+
 
             return res.status(200).json({
                 status: 'Success',
-                message: 'Data update successfully',
-                data : createWnm
+                message: 'Data create successfully',
+                data: createWnm
             })
 
         } catch (error) {
-            
+
         }
     },
 
@@ -128,17 +143,17 @@ module.exports = {
         try {
             const today = moment.utc(new Date()).local().format("YYYY-M-D")
 
-            if(moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") < today) {
+            if (moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") < today) {
                 return res.status(400).json({
-                    status : "failed",
-                    message : "Cant update date already passed"
+                    status: "failed",
+                    message: "Cant update date already passed"
                 })
             }
 
-            if(moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") > today) {
+            if (moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") > today) {
                 return res.status(400).json({
-                    status : "failed",
-                    message : "Cant update for tomorrow"
+                    status: "failed",
+                    message: "Cant update for tomorrow"
                 })
             }
 
@@ -178,19 +193,18 @@ module.exports = {
             }
 
             const getUser = await users.findOne({
-                where : { id : req.users.id }
+                where: { id: req.users.id }
             })
             const newProgres = getUser.dataValues.earlyWeight - req.body.weight
 
-            const heightInMeter = getUser.dataValues.height/100
+            const heightInMeter = getUser.dataValues.height / 100
 
             const newBmi = req.body.weight / (heightInMeter ** 2)
 
             await users.update({
-                progress : newProgres,
-                BMI : Math.round(newBmi)
-            },
-            {where : { id : req.users.id }})
+                progress: newProgres,
+                BMI: Math.round(newBmi)
+            }, { where: { id: req.users.id } })
 
             return res.status(200).json({
                 status: 'Success',
@@ -211,6 +225,35 @@ module.exports = {
             res.status(200).json({
                 status: 'Success',
                 message: "Data has been deleted"
+            });
+        } catch (error) {
+            console.log(error)
+            return res.status(500).json({
+                status: 'failed',
+                message: 'Internal server error'
+            })
+        }
+    },
+
+    getProgress: async(req, res) => {
+        const month = moment.utc(new Date(req.body.date)).local().format("YYYY-M")
+        try {
+            const allData = await weightMeasures.findAll({
+                attributes: { exclude: ['createdAt', 'updatedAt'] },
+                where: { date: month, userId: req.users.id }
+            });
+
+            if (!allData) {
+                return res.status(400).json({
+                    status: 'failed',
+                    message: 'Data not Found '
+                });
+            }
+
+            return res.status(200).json({
+                status: 'Success',
+                message: 'Data retrieved successfully',
+                data: allData
             });
         } catch (error) {
             console.log(error)
