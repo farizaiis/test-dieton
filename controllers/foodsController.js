@@ -5,6 +5,7 @@ const { Op } = require('sequelize')
 module.exports = {
     createFoods : async (req, res) => {
         const body = req.body
+        const akg = 2000
         try {
             const schema = Joi.object({
                 name : Joi.string().required(),
@@ -40,6 +41,7 @@ module.exports = {
             const addFoods = await foods.create({
                 name : body.name,
                 calorie : body.calorie,
+                rda: Math.round((body.calorie / akg) * 100),
                 unit : body.unit
             })
             if (!addFoods) {
@@ -115,10 +117,12 @@ module.exports = {
     updateFoods : async (req, res) => {
         const body = req.body
         const id = req.params.id
+        const akg = 2000
         try {
             const schema = Joi.object({
                 name : Joi.string(),
                 calorie : Joi.number(),
+                rda: Joi.number(),
                 unit : Joi.string(),
             })
             const check = schema.validate({
@@ -137,6 +141,7 @@ module.exports = {
                 {
                     name : body.name,
                     calorie : body.calorie,
+                    rda : Math.round((body.calorie / akg) * 100),
                     unit : body.unit
                 },
                 {

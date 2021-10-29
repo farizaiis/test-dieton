@@ -9,6 +9,7 @@ module.exports = {
         password: '$2b$10$xWZHmnvzXePzG.5rnaKaWOc.2Rx1GPzeJkfT76AHwl73yrVQe8hH2',
         profilePic: "https://res.cloudinary.com/dejongos/image/upload/v1634276426/profilePic/default.png",
         role: 'admin',
+        isVerified: true,
         createdAt: new Date(),
         updatedAt: new Date()
       }

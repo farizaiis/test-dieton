@@ -14,6 +14,9 @@ module.exports = {
       calorie: {
         type: Sequelize.INTEGER
       },
+      rda: {
+        type: Sequelize.INTEGER
+      },
       unit: {
         type: Sequelize.STRING
       },

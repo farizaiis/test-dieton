@@ -1,4 +1,4 @@
-const Joi = require('joi')
+const Joi = require('joi').extend(require('@joi/date'))
 const { listExercises, exercises, exercisesPlans } = require('../models')
 
 
@@ -13,9 +13,8 @@ module.exports = {
                 exerciseId : Joi.number().required(),
                 long : Joi.number().min(1),
                 time : Joi.string(),
-                alert : Joi.string(),
                 calAmount : Joi.number(),
-                alert : Joi.string()
+                alert : Joi.string().regex(/^([0-9]{2})\:([0-9]{2})$/)
             })
 
             const check = schema.validate({

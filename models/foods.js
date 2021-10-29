@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
   foods.init({
     name: DataTypes.STRING,
     calorie: DataTypes.INTEGER,
+    rda:DataTypes.INTEGER,
     unit: DataTypes.STRING
   }, {
     sequelize,
