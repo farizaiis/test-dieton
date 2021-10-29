@@ -18,7 +18,8 @@ module.exports = {
         onDelete : "CASCADE"
       },
       totalCalAmount: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0
       },
       date: {
         type: Sequelize.DATEONLY
