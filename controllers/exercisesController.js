@@ -149,7 +149,7 @@ module.exports = {
                 }
             }
 
-            const exercises = await exercises.update(
+            await exercises.update(
                 {
                     name : body.name,
                     calorie : body.calorie,
