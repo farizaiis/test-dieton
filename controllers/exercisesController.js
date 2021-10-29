@@ -41,7 +41,7 @@ module.exports = {
                 calorie : body.calorie,
                 [req.file ? "logoExercise" : null]: req.file ? req.file.path : null
             })
-            if (!addexercises) {
+            if (!addExercises) {
                 return res.status(400).json({
                     status: "failed",
                     message: "Data not found"
