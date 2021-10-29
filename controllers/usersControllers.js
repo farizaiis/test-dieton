@@ -5,11 +5,9 @@ const moment = require('moment');
 const { generateToken } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
 const nodemailer = require('nodemailer');
-const hbs = require('nodemailer-express-handlebars');
-
 
 module.exports = {
-    signup: async (req, res) => {
+    signup: async(req, res) => {
         const body = req.body
 
         try {
@@ -106,19 +104,14 @@ module.exports = {
                 }
             });
 
-            transporter.use('compile', hbs({
-                viewEngine: 'express-handlebars',
-                viewPath: '../backenddieton/'
-            }))
-
             const mailOptions = {
                 from: 'dieton281@gmail.com',
                 to: body.email,
                 subject: 'Verified Your Email',
-                template: 'main' 
+                template: 'main'
             };
 
-            transporter.sendMail(mailOptions, function (error, info) {
+            transporter.sendMail(mailOptions, function(error, info) {
                 if (error) {
                     console.log(error);
                 } else {
@@ -144,7 +137,7 @@ module.exports = {
         }
     },
 
-    signin: async (req, res) => {
+    signin: async(req, res) => {
         const body = req.body
 
         try {
@@ -172,13 +165,6 @@ module.exports = {
                 }
             })
 
-            if (userEmailData.dataValues.isVerified === false) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "please verified your email first"
-                })
-            }
-
             if (!userEmailData) {
                 return res.status(400).json({
                     status: "failed",
@@ -194,6 +180,14 @@ module.exports = {
                     message: "wrong password"
                 })
             }
+
+            if (userEmailData.dataValues.isVerified === false) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "please verified your email first"
+                })
+            }
+
 
             const payload = {
                 role: userEmailData.dataValues.role,
@@ -217,7 +211,7 @@ module.exports = {
         }
     },
 
-    delete: async (req, res) => {
+    delete: async(req, res) => {
         const id = req.params.id
 
         try {
@@ -263,7 +257,7 @@ module.exports = {
         }
     },
 
-    updateUserProfile: async (req, res) => {
+    updateUserProfile: async(req, res) => {
         const body = req.body;
 
         try {
@@ -331,12 +325,11 @@ module.exports = {
                 fullName: body.fullName,
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
                 [req.file ? "cover" : null]: req.file ? req.file.path : null
-            },
-                {
-                    where: {
-                        id: req.users.id
-                    }
-                });
+            }, {
+                where: {
+                    id: req.users.id
+                }
+            });
 
             if (!updateUser) {
                 return res.status(400).json({
@@ -366,7 +359,7 @@ module.exports = {
         }
     },
 
-    getUserById: async (req, res) => {
+    getUserById: async(req, res) => {
 
         try {
             const dataToken = req.users
@@ -406,7 +399,7 @@ module.exports = {
         }
     },
 
-    getAllUser: async (req, res) => {
+    getAllUser: async(req, res) => {
         try {
             const getAll = await users.findAll()
 
@@ -423,17 +416,16 @@ module.exports = {
         }
     },
 
-    verifiedAccount: async (req, res) => {
+    verifiedAccount: async(req, res) => {
         const id = req.params.id
 
         await users.update({
             isVerified: true
-        },
-            {
-                where: {
-                    id: id
-                }
-            })
+        }, {
+            where: {
+                id: id
+            }
+        })
 
         return res.status(200).json({
             status: "success",
@@ -441,7 +433,7 @@ module.exports = {
         })
     },
 
-    forgotPass: async (req, res) => {
+    forgotPass: async(req, res) => {
         const body = req.body
 
         try {
@@ -483,12 +475,11 @@ module.exports = {
 
             const resetPass = await users.update({
                 password: encrypt("dietOnResetPassword")
-            },
-                {
-                    where: {
-                        email: body.email
-                    }
-                })
+            }, {
+                where: {
+                    email: body.email
+                }
+            })
 
             const transporter = nodemailer.createTransport({
                 host: 'smtp.gmail.com',
@@ -510,7 +501,7 @@ module.exports = {
                 text: "password: dietOnResetPassword"
             };
 
-            transporter.sendMail(mailOptions, function (error, info) {
+            transporter.sendMail(mailOptions, function(error, info) {
                 if (error) {
                     console.log(error);
                 } else {
