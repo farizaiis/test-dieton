@@ -57,7 +57,8 @@ module.exports = {
         } 
     },
     getAllFacts : async (req, res) => {
-        try {const limit = parseInt(req.query.record);
+        try {
+            const limit = parseInt(req.query.record);
             const page = parseInt(req.query.page);
             const start = 0 * (page - 1) * limit;
             const end = page * limit;
@@ -89,11 +90,12 @@ module.exports = {
                     message: "Data not found"
                 })
             }
-           
+            
+
             return res.status(200).json({
                 status: "success",
                 message: "Get nutrition facts success",
-                data: GetFacts
+                data: GetFacts,
             })
 
         } catch (error) {
