@@ -8,21 +8,21 @@ module.exports = {
     postWeight: async(req, res) => {
         const body = req.body
         try {
-            // const today = moment.utc(new Date()).local().format("YYYY-M-D")
+            const today = moment.utc(new Date()).local().format("YYYY-M-D")
 
-            // if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") < today) {
-            //     return res.status(400).json({
-            //         status: "failed",
-            //         message: "Cant Create date already passed"
-            //     })
-            // }
+            if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") < today) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "Cant Create date already passed"
+                })
+            }
 
-            // if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") > today) {
-            //     return res.status(400).json({
-            //         status: "failed",
-            //         message: "Cant Create for tomorrow"
-            //     })
-            // }
+            if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") > today) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "Cant Create for tomorrow"
+                })
+            }
 
             const schema = Joi.object({
                 userId: Joi.number(),
