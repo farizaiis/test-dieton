@@ -5,8 +5,6 @@ const { listMeals, foods, mealsPlans } = require('../models')
 module.exports = {
     postListMeals : async (req, res) => {
         const body = req.body
-        const mealsPlanId = req.query.mealsplan
-        const foodId = req.query.food
         try {
             const schema = Joi.object({
                 mealsPlanId : Joi.number().required(),
@@ -16,8 +14,8 @@ module.exports = {
             })
 
             const check = schema.validate({
-                mealsPlanId : mealsPlanId,
-                foodId : foodId,
+                mealsPlanId : body.mealsPlanId,
+                foodId : body.foodId,
                 qty : body.qty
                 }, { abortEarly : false });
 
@@ -31,7 +29,7 @@ module.exports = {
             
             const cekMealsPlan = await mealsPlans.findOne({
                 where : {
-                    id : mealsPlanId
+                    id : body.mealsPlanId
                 }
             })
 
@@ -51,7 +49,7 @@ module.exports = {
             
             const cekFood = await foods.findOne({
                 where: {
-                    id : foodId
+                    id : body.foodId
                 }
             })
 
@@ -63,7 +61,7 @@ module.exports = {
             }
 
             const cekListMeals = await listMeals.findOne({
-                where : {mealsPlanId : mealsPlanId, foodId : foodId}
+                where : {mealsPlanId : body.mealsPlanId, foodId : body.foodId}
             })
 
             if (cekListMeals) {
@@ -74,15 +72,15 @@ module.exports = {
             }
 
             const dataListMeals = await listMeals.create({
-                mealsPlanId : mealsPlanId,
-                foodId : foodId,
+                mealsPlanId : body.mealsPlanId,
+                foodId : body.foodId,
                 qty : body.qty,
                 calAmount : cekFood.dataValues.calorie * body.qty
             });
 
             await mealsPlans.update({
                 totalCalAmount : (cekMealsPlan.dataValues.totalCalAmount + dataListMeals.dataValues.calAmount)
-            }, { where : {id : mealsPlanId}})
+            }, { where : {id : body.mealsPlanId}})
 
             return res.status(200).json({
                         status: "success",
