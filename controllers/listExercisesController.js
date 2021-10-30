@@ -91,7 +91,7 @@ module.exports = {
 
                 return res.status(200).json({
                     status: "success",
-                    message: "Succesfully input new food to the List",
+                    message: "Succesfully input new exercises to the List",
                     data : dataListExercises
                 });
             }
@@ -112,7 +112,7 @@ module.exports = {
 
                 return res.status(200).json({
                     status: "success",
-                    message: "Succesfully input new food to the List",
+                    message: "Succesfully input new exercises to the List",
                     data : dataListExercises
                 });
             }
