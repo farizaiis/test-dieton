@@ -8,5 +8,6 @@ router.post('/', loginCheck, weightMeasures.postWeight)
 router.get('/', loginCheck, weightMeasures.getWeight)
 router.put('/', loginCheck, weightMeasures.updateWeight)
 router.delete('/:id', loginCheck, authAdmin, weightMeasures.deleteWeight)
+router.get('/:date', loginCheck, weightMeasures.getProgress)
 
 module.exports = router

@@ -1,6 +1,7 @@
 const Joi = require('joi').extend(require('@joi/date'))
 const { weightMeasures, users } = require('../models')
 const moment = require('moment')
+const { Op } = require('sequelize')
 
 
 module.exports = {
@@ -236,11 +237,20 @@ module.exports = {
     },
 
     getProgress: async(req, res) => {
-        const month = moment.utc(new Date(req.body.date)).local().format("YYYY-M")
+        const month = new Date(req.params.date)
+        let firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
+        let lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 1);
+
         try {
             const allData = await weightMeasures.findAll({
                 attributes: { exclude: ['createdAt', 'updatedAt'] },
-                where: { date: month, userId: req.users.id }
+                where: {
+                    date: {
+                        [Op.gte]: firstDay,
+                        [Op.lt]: lastDay
+                    },
+                    userId: req.users.id
+                }
             });
 
             if (!allData) {

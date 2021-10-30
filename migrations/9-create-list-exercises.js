@@ -17,7 +17,7 @@ module.exports = {
         onUpdate : "CASCADE",
         onDelete : "CASCADE"
       },
-      exercisePlanId: {
+      exercisesPlanId: {
         type: Sequelize.INTEGER,
         references: {
           model : "exercisesPlans",

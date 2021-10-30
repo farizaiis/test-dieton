@@ -5,11 +5,9 @@ const { listExercises, exercises, exercisesPlans } = require('../models')
 module.exports = {
     postListExercises : async (req, res) => {
         const body = req.body
-        const exercisePlanId = req.query.exerciseplan
-        const exerciseId = req.query.exercise
         try {
             const schema = Joi.object({
-                exercisePlanId : Joi.number().required(),
+                exercisesPlanId : Joi.number().required(),
                 exerciseId : Joi.number().required(),
                 long : Joi.number().min(1),
                 time : Joi.string(),
@@ -18,8 +16,8 @@ module.exports = {
             })
 
             const check = schema.validate({
-                exercisePlanId : exercisePlanId,
-                exerciseId : exerciseId,
+                exercisesPlanId : body.exercisesPlanId,
+                exerciseId : body.exerciseId,
                 long : body.long,
                 time : body.time,
                 alert : body.alert
@@ -35,7 +33,7 @@ module.exports = {
             
             const cekExercisePlan = await exercisesPlans.findOne({
                 where : {
-                    id : exercisePlanId
+                    id : body.exercisesPlanId
                 }
             })
 
@@ -55,7 +53,7 @@ module.exports = {
             
             const cekExercise = await exercises.findOne({
                 where: {
-                    id : exerciseId
+                    id : body.exerciseId
                 }
             })
 
@@ -67,7 +65,7 @@ module.exports = {
             }
 
             const ceklistExercises = await listExercises.findOne({
-                where : {exercisePlanId : exercisePlanId, exerciseId : exerciseId, alert : body.alert}
+                where : {exercisesPlanId : body.exercisesPlanId, exerciseId : body.exerciseId, alert : body.alert}
             })
 
             if (ceklistExercises) {
@@ -79,8 +77,8 @@ module.exports = {
 
             if (body.time == 'Hours') {
                 const dataListExercises = await listExercises.create({
-                    exercisePlanId : exercisePlanId,
-                    exerciseId : exerciseId,
+                    exercisesPlanId : body.exercisesPlanId,
+                    exerciseId : body.exerciseId,
                     long : body.long,
                     time : body.time,
                     calAmount : cekExercise.dataValues.calorie * body.long,
@@ -89,7 +87,7 @@ module.exports = {
 
                 await exercisesPlans.update({
                     totalCalAmount : (cekExercisePlan.dataValues.totalCalAmount + dataListExercises.dataValues.calAmount)
-                }, { where : {id : exercisePlanId}})
+                }, { where : {id : body.exercisesPlanId}})
 
                 return res.status(200).json({
                     status: "success",
@@ -100,8 +98,8 @@ module.exports = {
 
             if (body.time == 'Minutes') {
                 const dataListExercises = await listExercises.create({
-                    exercisePlanId : exercisePlanId,
-                    exerciseId : exerciseId,
+                    exercisesPlanId : body.exercisesPlanId,
+                    exerciseId : body.exerciseId,
                     long : body.long,
                     time : body.time,
                     calAmount : Math.round((cekExercise.dataValues.calorie / 60) * body.long),
@@ -110,7 +108,7 @@ module.exports = {
 
                 await exercisesPlans.update({
                     totalCalAmount : (cekExercisePlan.dataValues.totalCalAmount + dataListExercises.dataValues.calAmount)
-                }, { where : {id : exercisePlanId}})
+                }, { where : {id : body.exercisesPlanId}})
 
                 return res.status(200).json({
                     status: "success",
@@ -145,7 +143,7 @@ module.exports = {
 
             const cekExercisePlan = await exercisesPlans.findOne({
                 where : {
-                    id : cekListExercises.dataValues.exercisePlanId
+                    id : cekListExercises.dataValues.exercisesPlanId
                 }
             })
 
@@ -199,7 +197,7 @@ module.exports = {
             }
 
             const dataListExercises = await listExercises.findAll({
-                where : { exercisePlanId : exerciseplan},
+                where : { exercisesPlanId : exerciseplan},
                 attributes : { exclude : ["id", "createdAt", "updatedAt"] },
                 include : [{
                     model : exercises
@@ -264,7 +262,7 @@ module.exports = {
 
             const cekExercisePlan = await exercisesPlans.findOne({
                 where : {
-                    id : cekList.dataValues.exercisePlanId
+                    id : cekList.dataValues.exercisesPlanId
                 }
             })
 
