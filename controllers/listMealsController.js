@@ -5,8 +5,6 @@ const { listMeals, foods, mealsPlans } = require('../models')
 module.exports = {
     postListMeals : async (req, res) => {
         const body = req.body
-   
-      
         try {
             const schema = Joi.object({
                 mealsPlanId : Joi.number().required(),
