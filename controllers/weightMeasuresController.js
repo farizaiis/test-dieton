@@ -1,27 +1,28 @@
 const Joi = require('joi').extend(require('@joi/date'))
 const { weightMeasures, users } = require('../models')
 const moment = require('moment')
+const { Op } = require('sequelize')
 
 
 module.exports = {
     postWeight: async(req, res) => {
         const body = req.body
         try {
-            const today = moment.utc(new Date()).local().format("YYYY-M-D")
+            // const today = moment.utc(new Date()).local().format("YYYY-M-D")
 
-            if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") < today) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "Cant Create date already passed"
-                })
-            }
+            // if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") < today) {
+            //     return res.status(400).json({
+            //         status: "failed",
+            //         message: "Cant Create date already passed"
+            //     })
+            // }
 
-            if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") > today) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "Cant Create for tomorrow"
-                })
-            }
+            // if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") > today) {
+            //     return res.status(400).json({
+            //         status: "failed",
+            //         message: "Cant Create for tomorrow"
+            //     })
+            // }
 
             const schema = Joi.object({
                 userId: Joi.number(),
@@ -236,11 +237,20 @@ module.exports = {
     },
 
     getProgress: async(req, res) => {
-        const month = moment.utc(new Date(req.body.date)).local().format("YYYY-M")
+        const month = new Date(req.params.date)
+        let firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
+        let lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 1);
+
         try {
             const allData = await weightMeasures.findAll({
                 attributes: { exclude: ['createdAt', 'updatedAt'] },
-                where: { date: month, userId: req.users.id }
+                where: {
+                    date: {
+                        [Op.gte]: firstDay,
+                        [Op.lt]: lastDay
+                    },
+                    userId: req.users.id
+                }
             });
 
             if (!allData) {
