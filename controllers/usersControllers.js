@@ -503,14 +503,16 @@ module.exports = {
                 fullName: Joi.string(),
                 password: Joi.string().min(6).max(12),
                 profilePic: Joi.string(),
-                cover: Joi.string()
+                cover: Joi.string(),
+                height: Joi.number()
             })
 
             const check = schema.validate({
                 fullName: body.fullName,
                 password: body.password,
                 profilePic: req.file ? req.file.path : "profilePic",
-                cover: req.file ? req.file.path : "cover"
+                cover: req.file ? req.file.path : "cover",
+                height: body.height
             }, { abortEarly: false });
 
             if (check.error) {
@@ -562,7 +564,8 @@ module.exports = {
             const updateUser = await users.update({
                 fullName: body.fullName,
                 [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
-                [req.file ? "cover" : null]: req.file ? req.file.path : null
+                [req.file ? "cover" : null]: req.file ? req.file.path : null,
+                height: body.height
             },
                 {
                     where: {
