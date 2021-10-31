@@ -7,5 +7,6 @@ router.get('/', loginCheck, listExercises.getAll)
 router.post('/', loginCheck, listExercises.postListExercises)
 router.delete('/:id', loginCheck, listExercises.deleteListExercises)
 router.put('/:id', loginCheck, listExercises.updateList)
+router.put('/status/', loginCheck, listExercises.updateStatus)
 
 module.exports = router
