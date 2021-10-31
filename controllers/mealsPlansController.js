@@ -193,25 +193,10 @@ module.exports = {
             }}
             );
 
-            const dataMealsPlans = await mealsPlans.findOne({
-                where : {
-                    userId : req.users.id,
-                    mealsTime : req.query.type,
-                    date : req.query.date,
-                }
-            })
-
-            const getCalTrack = await calorieTrackers.findOne({
-                where : {
-                    userId : req.users.id,
-                    date : req.query.date
-                }
-            })
-
             await calorieTrackers.update(
             {
-                calConsumed : getCalTrack.dataValues.calConsumed + dataMealsPlans.dataValues.totalCalAmount,
-                remainCalSize : getCalTrack.dataValues.remainCalSize - dataMealsPlans.dataValues.totalCalAmount
+                calConsumed : cekCalorieTracker.dataValues.calConsumed + cekMealsPlans.dataValues.totalCalAmount,
+                remainCalSize : cekCalorieTracker.dataValues.remainCalSize - cekMealsPlans.dataValues.totalCalAmount
             },
             {
                 where : {
@@ -222,8 +207,7 @@ module.exports = {
 
             return res.status(200).json({
                         status: "success",
-                        message: "Succesfully Update Status",
-                        data : dataMealsPlans
+                        message: "Succesfully Update Status"
                     });
             
         } catch (error) {

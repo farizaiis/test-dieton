@@ -1,5 +1,5 @@
 const Joi = require('joi').extend(require('@joi/date'))
-const { listExercises, exercises, exercisesPlans } = require('../models')
+const { listExercises, exercises, exercisesPlans, calorieTrackers } = require('../models')
 
 
 module.exports = {
@@ -91,7 +91,7 @@ module.exports = {
 
                 return res.status(200).json({
                     status: "success",
-                    message: "Succesfully input new food to the List",
+                    message: "Succesfully input new exercises to the List",
                     data : dataListExercises
                 });
             }
@@ -112,7 +112,7 @@ module.exports = {
 
                 return res.status(200).json({
                     status: "success",
-                    message: "Succesfully input new food to the List",
+                    message: "Succesfully input new exercises to the List",
                     data : dataListExercises
                 });
             }
@@ -368,4 +368,73 @@ module.exports = {
             });
         }
     },
+
+    updateStatus : async (req, res) => {
+        try { 
+            const cekListExercises = await listExercises.findOne({
+                where : {
+                    id : req.query.id
+                }
+            })
+
+            const cekExercisesPlans = await exercisesPlans.findOne({
+                where : {
+                    id : cekListExercises.dataValues.exercisesPlanId
+                }
+            })
+
+            const cekCalorieTracker = await calorieTrackers.findOne({
+                where : {
+                    userId : req.users.id,
+                    date : cekExercisesPlans.dataValues.date
+                }
+            })
+
+            if(!cekExercisesPlans || !cekCalorieTracker || !cekListExercises) {
+                return res.status(400).json({
+                    status : "failed",
+                    message : "Data not found"
+                })
+            }
+
+            if(cekListExercises.dataValues.status == 1){
+                return res.status(400).json({
+                    status : "failed",
+                    message : "the Exercise Already update"
+                })
+            }
+
+            await listExercises.update({
+                status : 1
+            },
+            {where : {
+                id : req.query.id
+            }}
+            );
+
+            await calorieTrackers.update(
+            {
+                calConsumed : cekCalorieTracker.dataValues.calConsumed + cekListExercises.dataValues.calAmount,
+                remainCalSize : cekCalorieTracker.dataValues.remainCalSize - cekListExercises.dataValues.calAmount
+            },
+            {
+                where : {
+                    userId : req.users.id,
+                    date : cekExercisesPlans.dataValues.date
+                }
+            })
+
+            return res.status(200).json({
+                        status: "success",
+                        message: "Succesfully Update Status"
+                    });
+            
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({
+            status: "failed",
+            message: "Internal Server Error",
+            });
+        }
+    }
 }

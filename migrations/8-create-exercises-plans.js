@@ -24,10 +24,6 @@ module.exports = {
       date: {
         type: Sequelize.DATEONLY
       },
-      status: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

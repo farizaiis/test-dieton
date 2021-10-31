@@ -23,8 +23,7 @@ module.exports = (sequelize, DataTypes) => {
   exercisesPlans.init({
     userId: DataTypes.INTEGER,
     totalCalAmount: DataTypes.INTEGER,
-    date: DataTypes.DATEONLY,
-    status: DataTypes.INTEGER
+    date: DataTypes.DATEONLY
   }, {
     sequelize,
     modelName: 'exercisesPlans',
