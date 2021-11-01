@@ -8,6 +8,15 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      exerciseId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model : "exercises",
+          key : "id"
+        },
+        onUpdate : "CASCADE",
+        onDelete : "CASCADE"
+      },
       userId: {
         type: Sequelize.INTEGER,
         references: {
@@ -17,12 +26,24 @@ module.exports = {
         onUpdate : "CASCADE",
         onDelete : "CASCADE"
       },
-      totalCalAmount: {
+      long: {
+        type: Sequelize.STRING
+      },
+      time : {
+        type: Sequelize.ENUM('Hours', 'Minutes')
+      },
+      calAmount: {
+        type: Sequelize.INTEGER
+      },
+      alert: {
+        type: Sequelize.TIME
+      },
+      date : {
+        type: Sequelize.DATEONLY
+      },
+      status: {
         type: Sequelize.INTEGER,
         defaultValue: 0
-      },
-      date: {
-        type: Sequelize.DATEONLY
       },
       createdAt: {
         allowNull: false,
