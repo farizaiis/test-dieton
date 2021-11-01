@@ -11,10 +11,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      exercises.belongsToMany(models.exercisesPlans,
+      exercises.belongsToMany(models.users,
         {
-          through: models.listExercises,
-          as : "listexercises"
+          through: models.exercisesPlans,
+          as : "exercisesplans"
         })
     }
   };

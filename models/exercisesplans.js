@@ -11,19 +11,19 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      exercisesPlans.belongsToMany(models.exercises,
-        {
-          through: models.listExercises,
-          as : "listexercises"
-        })
-        
-      exercisesPlans.belongsTo(models.users, {as : 'exerciseplans', foreignKey: 'userId'})
+      exercisesPlans.belongsTo(models.users, {foreignKey: 'userId'})
+      exercisesPlans.belongsTo(models.exercises, {foreignKey: 'exerciseId'})
     }
   };
   exercisesPlans.init({
+    exerciseId: DataTypes.INTEGER,
     userId: DataTypes.INTEGER,
-    totalCalAmount: DataTypes.INTEGER,
-    date: DataTypes.DATEONLY
+    long: DataTypes.STRING,
+    time: DataTypes.STRING,
+    calAmount: DataTypes.INTEGER,
+    alert: DataTypes.TIME,
+    date: DataTypes.DATEONLY,
+    status: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'exercisesPlans',
