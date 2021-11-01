@@ -58,44 +58,81 @@ module.exports = {
     },
     getAllFacts : async (req, res) => {
         try {
-            const limit = parseInt(req.query.record);
+            const limit = 4
             const page = parseInt(req.query.page);
-            const start = 0 * (page - 1) * limit;
-            const end = page * limit;
-            const GetFacts =  await nutritionFacts.findAndCountAll({
-            limit: limit,
-            offset: start
+            const offset = limit * (page - 1);
+            const order = req.query.order;
+            if (!page && !order) {
+                const fact = await nutritionFacts.findAll({
+                    attributes: {exclude: ['createdAt','updatedAt']}
+                })
+                return res.status(200).json({
+                    status: "success",
+                    message: "Get nutrition facts success",
+                    data: fact
+                })
+            }
+            const GetFacts = await nutritionFacts.findAll({
+                attributes: {exclude: ['createdAt','updatedAt']},
+                limit: limit,
+                offset: offset
             })
-
-            let countFiltered = nutritionFacts.count;
-            let pagination = {}
-            pagination.totalRow = nutritionFacts.count;
-            pagination.totalpage = Math.ceil(countFiltered / limit)
-            if (end < countFiltered) {
-                pagination.next = {
-                    page: page + 1,
-                    limit
-                }
-            }
-            if (start > 0) {
-                pagination.prev = {
-                    page: page - 1,
-                    limit
-                }
-            }
-            
             if (!GetFacts) {
                 return res.status(400).json({
                     status: "failed",
                     message: "Data not found"
                 })
             }
-            
-
+            const count = await nutritionFacts.count({ distinct: true });
+            let next = page + 1;
+            if (page * limit >= count) {
+                next = 0;
+            }
+            if (order == 'Time') {
+                const GetFacts = await nutritionFacts.findAll({
+                    attributes: {exclude: ['createdAt','updatedAt']},
+                    limit: limit,
+                    offset: offset,
+                    order: [['releaseDate','DESC']]
+                })
+                return res.status(200).json({
+                    status: "success",
+                    message: "Get nutrition facts success",
+                    data: GetFacts,
+                    meta: {
+                        page: page,
+                        next: next,
+                        total: count
+                    }
+                })
+            }
+            if (order == 'Alphabet') {
+                const GetFacts = await nutritionFacts.findAll({
+                    attributes: {exclude: ['createdAt','updatedAt']}, 
+                    limit: limit,
+                    offset: offset,
+                    order: [['title','ASC']]
+                })
+                return res.status(200).json({
+                    status: "success",
+                    message: "Get nutrition facts success",
+                    data: GetFacts,
+                    meta: {
+                        page: page,
+                        next: next,
+                        total: count
+                    }
+                })
+            }
             return res.status(200).json({
                 status: "success",
                 message: "Get nutrition facts success",
                 data: GetFacts,
+                meta: {
+                    page: page,
+                    next: next,
+                    total: count
+                }
             })
 
         } catch (error) {
