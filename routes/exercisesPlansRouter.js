@@ -2,10 +2,11 @@ const express = require('express')
 const router = express.Router()
 const exercisesPlans = require('../controllers/exercisesPlansController')
 const { loginCheck } = require('../middlewares/authentication')
-const { authAdmin } = require('../middlewares/authorization')
 
-router.post('/', loginCheck, exercisesPlans.postExercisesPlans)
-router.get('/', loginCheck, exercisesPlans.getUserPlans)
-router.delete('/:id', loginCheck, authAdmin, exercisesPlans.deleteExercisesPlans)
+router.get('/', loginCheck, exercisesPlans.getAll)
+router.post('/', loginCheck, exercisesPlans.postListExercises)
+router.delete('/:id', loginCheck, exercisesPlans.deleteListExercises)
+router.put('/:id', loginCheck, exercisesPlans.updateList)
+router.put('/status/:id', loginCheck, exercisesPlans.updateStatus)
 
 module.exports = router
