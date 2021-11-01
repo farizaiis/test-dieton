@@ -72,22 +72,26 @@ module.exports = {
                     data: fact
                 })
             }
+
             const GetFacts = await nutritionFacts.findAll({
                 attributes: {exclude: ['createdAt','updatedAt']},
                 limit: limit,
                 offset: offset
             })
+
             if (!GetFacts) {
                 return res.status(400).json({
                     status: "failed",
                     message: "Data not found"
                 })
             }
+
             const count = await nutritionFacts.count({ distinct: true });
             let next = page + 1;
             if (page * limit >= count) {
                 next = 0;
             }
+            
             if (order == 'Time') {
                 const GetFacts = await nutritionFacts.findAll({
                     attributes: {exclude: ['createdAt','updatedAt']},
