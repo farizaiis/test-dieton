@@ -293,7 +293,9 @@ module.exports = {
                         }, 
                         {where : {id : req.params.id}}
                     )
-                } else if(req.body.time == 'Minutes'){
+                } 
+                
+                if(req.body.time == 'Minutes'){
                     await exercisesPlans.update(
                         {
                             long : req.body.long,
@@ -326,7 +328,9 @@ module.exports = {
                         }, 
                         {where : {id : req.params.id}}
                     )
-                } else if(cekList.dataValues.time == 'Minutes'){
+                } 
+                
+                if(cekList.dataValues.time == 'Minutes'){
                     await exercisesPlans.update(
                         {
                             long : req.body.long,
