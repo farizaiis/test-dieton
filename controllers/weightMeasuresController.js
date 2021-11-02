@@ -2,6 +2,7 @@ const Joi = require('joi').extend(require('@joi/date'))
 const { weightMeasures, users } = require('../models')
 const moment = require('moment')
 const { Op } = require('sequelize')
+moment.suppressDeprecationWarnings = true;
 
 
 module.exports = {

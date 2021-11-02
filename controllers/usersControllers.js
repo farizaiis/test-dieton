@@ -6,6 +6,7 @@ const { generateToken } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
 const nodemailer = require('nodemailer');
 const randomstring = require('randomstring');    
+moment.suppressDeprecationWarnings = true;
 
 
 module.exports = {
@@ -349,11 +350,13 @@ module.exports = {
                 </html>`
             };
 
+            let Email = ""
+
             transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
                     console.log(error);
                 } else {
-                    console.log('Email sent: ' + info.response)
+                    Email = "Email Sent"
                 }
             });
 
@@ -363,7 +366,8 @@ module.exports = {
                 token: token,
                 dataUser: userCheck,
                 dataCalorie: createCalorieSize,
-                dataWeight: createWeightMeasure
+                dataWeight: createWeightMeasure,
+                email_status : Email
             });
 
         } catch (error) {
@@ -1008,11 +1012,13 @@ module.exports = {
                 </html>`
             };
 
+            let Email = ""
+
             transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
                     console.log(error);
                 } else {
-                    console.log('Email sent: ' + info.response)
+                    Email = "Email Sent"
                 }
             });
 
