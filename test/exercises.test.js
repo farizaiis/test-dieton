@@ -55,7 +55,7 @@ test("GET /v1/exercises/:id", async () => {
     })
 
     const data = {
-        name : "Get Data 2",
+        name : "Get Data 10",
         calorie : 130,
         logoExercise : 'https://res.cloudinary.com/dejongos/image/upload/v1635509618/logoExercise/rd5p7zxkak2arpxvtdaq.png'
     }

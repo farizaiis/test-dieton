@@ -68,26 +68,6 @@ test("GET /v1/foods/:id", async () => {
     });
 });
 
-test("GET /v1/foods/:id", async () => {
-
-    const token = await supertest(app)
-    .post("/v1/users/signin")
-    .send({
-        email: "admin@gmail.com",
-        password: "admindieton"
-    })
-
-    const id = 3
-
-    await supertest(app)
-    .get("/v1/foods/" + id)
-    .set("Authorization", "Bearer " + token.body.token)
-    .expect(200)
-    .then((res) => {
-        expect(typeof res.body).toBe('object');
-    });
-});
-
 test("GET /v1/foods?name=", async () => {
 
     const token = await supertest(app)

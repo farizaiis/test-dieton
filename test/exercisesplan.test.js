@@ -13,7 +13,7 @@ test("POST /v1/exercisesplan/", async () => {
     .post("/v1/exercises/")
     .set("Authorization", "Bearer " + token.body.token)
     .send({
-        name: "Create Data 11",
+        name: "Create Data Test 2",
         calorie: 130,
         logoExercise : "https://res.cloudinary.com/dejongos/image/upload/v1634276426/profilePic/default.png"
     })
@@ -22,8 +22,8 @@ test("POST /v1/exercisesplan/", async () => {
         "exerciseId" : exercisesData.body.data.id,
         "long" : 20,
         "time" : "Hours",
-        "alert" : "05:00",
-        "date" : "2021-11-02"
+        "alert" : "08:00",
+        "date" : "2021-11-03"
     };
 
     await supertest(app)
@@ -52,7 +52,7 @@ test("POST /v1/exercisesplan/", async () => {
     .post("/v1/exercises/")
     .set("Authorization", "Bearer " + token.body.token)
     .send({
-        name: "Create Data 20",
+        name: "Create Data 3",
         calorie: 130,
         logoExercise : "https://res.cloudinary.com/dejongos/image/upload/v1634276426/profilePic/default.png"
     })
@@ -61,7 +61,7 @@ test("POST /v1/exercisesplan/", async () => {
         "exerciseId" : exercisesData.body.data.id,
         "long" : 20,
         "time" : "Minutes",
-        "alert" : "12:00",
+        "alert" : "01:00",
         "date" : "2021-11-05"
     };
 
