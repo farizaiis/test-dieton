@@ -1087,7 +1087,7 @@ module.exports = {
 
             const token = generateToken(payload)
 
-            return res.redirect('/?token=' + token)
+            return res.redirect('' + token)
 
         } catch (error) {
             return res.status(500).json({
