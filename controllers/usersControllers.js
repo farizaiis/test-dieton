@@ -169,7 +169,7 @@ module.exports = {
                     text-decoration: none !important;
                   }
                 
-                 
+
                   div[style*="margin: 16px 0;"] {
                     margin: 0 !important;
                   }
@@ -349,7 +349,7 @@ module.exports = {
                 
                 </body>
                 </html>`
-            };
+      };
 
             let Email = ""
 
@@ -378,24 +378,6 @@ module.exports = {
                 message: "Internal Server Error",
             });
         }
-      });
-
-      return res.status(200).json({
-        status: "success",
-        message: "sign up successfully, and please check your email to verified",
-        token: token,
-        dataUser: userCheck,
-        dataCalorie: createCalorieSize,
-        dataWeight: createWeightMeasure
-      });
-
-    } catch (error) {
-      console.log("🚀 ~ file: usersControllers.js ~ line 79 ~ signup: ~ error", error)
-      return res.status(500).json({
-        status: "failed",
-        message: "Internal Server Error",
-      });
-    }
   },
 
   signin: async (req, res) => {
@@ -1052,19 +1034,6 @@ module.exports = {
                 message: "Internal Server Error",
             });
         }
-      });
-
-      return res.status(200).json({
-        status: "success",
-        message: "successfully reset password, and please check email for your new password"
-      });
-    } catch (error) {
-      console.log("🚀 ~ file: usersControllers.js ~ line 499 ~ forgotPass:async ~ error", error)
-      return res.status(500).json({
-        status: "failed",
-        message: "Internal Server Error",
-      });
-    }
   },
 
   googleSignInWebVersion: async (req, res) => {
