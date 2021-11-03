@@ -222,7 +222,7 @@ module.exports = {
 
             return res.status(200).json({
                 status: "success",
-                message: "Success get list meals data",
+                message: "Success get list Exercises data",
                 data: dataListExercises
             })
         } catch (error) {

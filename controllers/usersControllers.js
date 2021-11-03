@@ -6,7 +6,8 @@ const { generateToken, getUserdata } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
 const verify = require('../helper/googleHelper');
 const nodemailer = require('nodemailer');
-const randomstring = require('randomstring');
+const randomstring = require('randomstring');    
+moment.suppressDeprecationWarnings = true;
 
 
 module.exports = {
@@ -348,13 +349,34 @@ module.exports = {
                 
                 </body>
                 </html>`
-      };
+            };
 
-      transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log('Email sent: ' + info.response)
+            let Email = ""
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    Email = "Email Sent"
+                }
+            });
+
+            return res.status(200).json({
+                status: "success",
+                message: "sign up successfully, and please check your email to verified",
+                token: token,
+                dataUser: userCheck,
+                dataCalorie: createCalorieSize,
+                dataWeight: createWeightMeasure,
+                email_status : Email
+            });
+
+        } catch (error) {
+            console.log("🚀 ~ file: usersControllers.js ~ line 79 ~ signup: ~ error", error)
+            return res.status(500).json({
+                status: "failed",
+                message: "Internal Server Error",
+            });
         }
       });
 
@@ -1007,13 +1029,28 @@ module.exports = {
                 
                 </body>
                 </html>`
-      };
+            };
 
-      transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log('Email sent: ' + info.response)
+            let Email = ""
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    Email = "Email Sent"
+                }
+            });
+
+            return res.status(200).json({
+                status: "success",
+                message: "successfully reset password, and please check email for your new password"
+            });
+        } catch (error) {
+            console.log("🚀 ~ file: usersControllers.js ~ line 499 ~ forgotPass:async ~ error", error)
+            return res.status(500).json({
+                status: "failed",
+                message: "Internal Server Error",
+            });
         }
       });
 
