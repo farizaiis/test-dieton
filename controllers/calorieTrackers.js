@@ -1,17 +1,16 @@
 const { calorieTrackers, users } = require('../models');
-const moment = require('moment');
 const Joi = require('joi')
 
 module.exports = {
     getDataById: async (req, res) => {
-        const dateData = moment.utc(new Date()).local().format("YYYY-M-D");
+        const dateData = new Date()
         const dataUserId = req.users.id;
 
         try {
             const dataCalorie = await calorieTrackers.findOne({
                 where: {
                     userId: dataUserId,
-                    date: dateData
+                    date: new Date(dateData.getFullYear(), dateData.getMonth(), dateData.getDate())
                 },
                 include: [{
                     model: users,
@@ -59,12 +58,12 @@ module.exports = {
                 })
             };
 
-            const today = moment.utc(new Date()).local().format('YYYY-M-D')
+            const today = new Date()
 
             const dataCalorieTrack = await calorieTrackers.findOne({
                 where: {
                     userId: req.users.id,
-                    date: today
+                    date: new Date(today.getFullYear(), today.getMonth(), today.getDate())
                 }
             })
 
