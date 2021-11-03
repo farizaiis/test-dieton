@@ -6,7 +6,7 @@ const { generateToken, getUserdata } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
 const verify = require('../helper/googleHelper');
 const nodemailer = require('nodemailer');
-const randomstring = require('randomstring');    
+const randomstring = require('randomstring');
 moment.suppressDeprecationWarnings = true;
 
 
@@ -68,7 +68,7 @@ module.exports = {
         earlyWeight: body.weight,
         calorieSize: body.calorieSize,
         progress: 0,
-        BMI: Math.round(body.weight / ((body.height / 100) ** 2))
+        BMI: Math.round(body.weight / ((body.height / 100) ** 2)),
       });
 
       const createCalorieSize = await calorieTrackers.create({
@@ -351,33 +351,33 @@ module.exports = {
                 </html>`
       };
 
-            let Email = ""
+      let Email = ""
 
-            transporter.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    console.log(error);
-                } else {
-                    Email = "Email Sent"
-                }
-            });
-
-            return res.status(200).json({
-                status: "success",
-                message: "sign up successfully, and please check your email to verified",
-                token: token,
-                dataUser: userCheck,
-                dataCalorie: createCalorieSize,
-                dataWeight: createWeightMeasure,
-                email_status : Email
-            });
-
-        } catch (error) {
-            console.log("🚀 ~ file: usersControllers.js ~ line 79 ~ signup: ~ error", error)
-            return res.status(500).json({
-                status: "failed",
-                message: "Internal Server Error",
-            });
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          Email = "Email Sent"
         }
+      });
+
+      return res.status(200).json({
+        status: "success",
+        message: "sign up successfully, and please check your email to verified",
+        token: token,
+        dataUser: userCheck,
+        dataCalorie: createCalorieSize,
+        dataWeight: createWeightMeasure,
+        email_status: Email
+      });
+
+    } catch (error) {
+      console.log("🚀 ~ file: usersControllers.js ~ line 79 ~ signup: ~ error", error)
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error",
+      });
+    }
   },
 
   signin: async (req, res) => {
@@ -508,23 +508,21 @@ module.exports = {
         fullName: Joi.string(),
         password: Joi.string().min(6).max(12),
         profilePic: Joi.string(),
-        cover: Joi.string(),
-        height: Joi.number()
+        height: Joi.number(),
       })
 
       const check = schema.validate({
         fullName: body.fullName,
         password: body.password,
         profilePic: req.file ? req.file.path : "profilePic",
-        cover: req.file ? req.file.path : "cover",
-        height: body.height
+        height: body.height,
       }, { abortEarly: false });
 
       if (check.error) {
         return res.status(400).json({
           status: "failed",
           message: "Bad Request",
-          errors: error["details"].map(({ message }) => message)
+          errors: check.error["details"].map(({ message }) => message)
         })
       };
 
@@ -536,7 +534,7 @@ module.exports = {
 
       if (!dataUser) {
         return res.status(400).json({
-          status: " failed",
+          status: "failed",
           message: "data not found"
         })
       }
@@ -569,8 +567,7 @@ module.exports = {
       const updateUser = await users.update({
         fullName: body.fullName,
         [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
-        [req.file ? "cover" : null]: req.file ? req.file.path : null,
-        height: body.height
+        height: body.height,
       },
         {
           where: {
@@ -599,6 +596,76 @@ module.exports = {
 
     } catch (error) {
       console.log("🚀 ~ file: usersControllers.js ~ line 316 ~ update: ~ error", error)
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error"
+      })
+    }
+  },
+
+  uploadCover: async (req, res) => {
+    const body = req.body;
+
+    try {
+      const schema = Joi.object({
+        cover: Joi.string(),
+      });
+
+      const check = schema.validate({
+        cover: req.file ? req.file.path : "cover",
+      }, { abortEarly: false });
+
+      if (check.error) {
+        return res.status(400).json({
+          status: "failed",
+          message: "Bad Request",
+          errors: check.error["details"].map(({ message }) => message)
+        })
+      };
+
+      const dataUser = await users.findOne({
+        where: {
+          id: req.users.id
+        }
+      });
+
+      if (!dataUser) {
+        return res.status(400).json({
+          status: "failed",
+          message: "data not found",
+        })
+      };
+
+      const updateCover = await users.update({
+        [req.file ? "cover" : null]: req.file ? req.file.path : null
+      },
+        {
+          where: {
+            id: req.users.id
+          }
+        });
+
+      if (!updateCover) {
+        return res.status(400).json({
+          status: "failed",
+          message: "unable to input the data",
+        })
+      };
+
+      const dataUserUpdateCover = await users.findOne({
+        where: {
+          id: req.users.id
+        }
+      });
+
+      return res.status(200).json({
+        status: "success",
+        message: "update cover successfully",
+        data: dataUserUpdateCover
+      })
+
+    } catch (error) {
+      console.log("🚀 ~ file: usersControllers.js ~ line 671 ~ uploadCover: ~ error", error)
       return res.status(500).json({
         status: "failed",
         message: "Internal Server Error"
@@ -1011,29 +1078,29 @@ module.exports = {
                 
                 </body>
                 </html>`
-            };
+      };
 
-            let Email = ""
+      let Email = ""
 
-            transporter.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    console.log(error);
-                } else {
-                    Email = "Email Sent"
-                }
-            });
-
-            return res.status(200).json({
-                status: "success",
-                message: "successfully reset password, and please check email for your new password"
-            });
-        } catch (error) {
-            console.log("🚀 ~ file: usersControllers.js ~ line 499 ~ forgotPass:async ~ error", error)
-            return res.status(500).json({
-                status: "failed",
-                message: "Internal Server Error",
-            });
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          Email = "Email Sent"
         }
+      });
+
+      return res.status(200).json({
+        status: "success",
+        message: "successfully reset password, and please check email for your new password"
+      });
+    } catch (error) {
+      console.log("🚀 ~ file: usersControllers.js ~ line 499 ~ forgotPass:async ~ error", error)
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error",
+      });
+    }
   },
 
   googleSignInWebVersion: async (req, res) => {

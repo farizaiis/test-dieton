@@ -13,7 +13,8 @@ const { googleSignInMobVersion, googleSignInWebVersion } = require('../controlle
 router.post('/register', users.signup);
 router.post('/signin', users.signin);
 router.delete('/delete/:id', loginCheck, users.delete);
-router.put('/update', loginCheck, uploadProfilePic("profilePic"), uploadCover("cover"), users.updateUserProfile);
+router.put('/update', loginCheck, uploadProfilePic("profilePic"), users.updateUserProfile);
+router.put('/updatecover', loginCheck, uploadCover("cover"), users.uploadCover);
 router.get('/userprofile', loginCheck, users.getUserById);
 router.get('/', loginCheck, authAdmin, users.getAllUser);
 router.put('/verifiedaccount/:id', users.verifiedAccount);

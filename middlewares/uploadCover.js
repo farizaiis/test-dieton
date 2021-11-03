@@ -17,7 +17,7 @@ module.exports = (fieldName) => {
         }
         })
     
-        const upload = multer({ storage: storage }).single(fieldName)
+    const upload = multer({ storage: storage }).single(fieldName)
 
     return (req, res, next) => {
         upload(req, res, (err) => {
