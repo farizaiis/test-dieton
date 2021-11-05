@@ -4,7 +4,7 @@ const Joi = require('joi');
 const moment = require('moment');
 const { generateToken } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
-const verify = require('../helper/googleHelper');
+// const verify = require('../helper/googleHelper');
 const nodemailer = require('nodemailer');
 const randomstring = require('randomstring');
 
@@ -1105,77 +1105,78 @@ module.exports = {
     }
   },
 
-  // googleSignInWebVersion: async (req, res) => {
-  //   const t = await sequelize.transaction();
-  //   let payload;
-  //   try {
-  //     const userGooglePass = `${req.users._json.azp}${req.users._json.email}${req.users._json.iat}`
-  //     const userCheck = await users.findOne({
-  //       where: {
-  //         email: req.users._json.email
-  //       }
-  //     })
+  googleSignInWebVersion: async (req, res) => {
+    const t = await sequelize.transaction();
+    let payload;
+    try {
+      const userGooglePass = `${req.user._json.azp}${req.user._json.email}${req.user._json.iat}`
+      const userCheck = await users.findOne({
+        where: {
+          email: req.user._json.email
+        }
+      })
 
-  //     if (userCheck) {
-  //       payload = {
-  //         role: userCheck.dataValues.role,
-  //         email: userCheck.dataValues.email,
-  //         id: userCheck.dataValues.id
-  //       }
-  //     } else {
-  //       const createProfile = await users.create({
-  //         fullName: req.users._json.name,
-  //         email: req.users._json.email,
-  //         profilePic: req.users._json.picture,
-  //         password: encrypt(userGooglePass),
-  //         height: 0,
-  //         earlyWeight: 0,
-  //         calorieSize: 0,
-  //         progress: 0,
-  //         BMI: 0,
-  //         isVerified: true
-  //       }, { transaction: t });
+      if (userCheck) {
+        payload = {
+          role: userCheck.dataValues.role,
+          email: userCheck.dataValues.email,
+          id: userCheck.dataValues.id
+        }
+      } else {
+        const createProfile = await users.create({
+          fullName: req.user._json.name,
+          email: req.user._json.email,
+          profilePic: req.user._json.picture,
+          password: encrypt(userGooglePass),
+          height: 0,
+          earlyWeight: 0,
+          calorieSize: 0,
+          progress: 0,
+          BMI: 0,
+          isVerified: true
+        }, { transaction: t });
 
-  //       const createCalorie = await calorieTrackers.create({
-  //         userId: createProfile.dataValues.id,
-  //         calConsumed: 0,
-  //         remainCalSize: 0,
-  //         data: moment(new Date()).local().format("YYYY-M-D")
-  //       }, { transaction: t });
+        const createCalorie = await calorieTrackers.create({
+          userId: createProfile.dataValues.id,
+          calConsumed: 0,
+          remainCalSize: 0,
+          data: moment(new Date()).local().format("YYYY-M-D")
+        }, { transaction: t });
 
-  //       const createWeight = await weightMeasures.create({
-  //         userId: createProfile.dataValues.id,
-  //         weight: 0,
-  //         waistline: 0,
-  //         thigh: 0,
-  //         date: moment(new Date()).local().format("YYYY-M-D")
-  //       }, { transaction: t });
+        const createWeight = await weightMeasures.create({
+          userId: createProfile.dataValues.id,
+          weight: 0,
+          waistline: 0,
+          thigh: 0,
+          date: moment(new Date()).local().format("YYYY-M-D")
+        }, { transaction: t });
 
-  //       await t.commit()
+        await t.commit()
 
-  //       payload = {
-  //         role: createProfile.dataValues.role,
-  //         email: createProfile.dataValues.email,
-  //         id: createProfile.dataValues.id
-  //       };
-  //     };
+        payload = {
+          role: createProfile.dataValues.role,
+          email: createProfile.dataValues.email,
+          id: createProfile.dataValues.id
+        };
+      };
 
-  //     const token = generateToken(payload)
+      const token = generateToken(payload)
 
-  //     return res.status(200).json({
-  //       status: "success",
-  //       message: "sign in successfully",
-  //       token: token,
-  //     });
+      return res.status(200).json({
+        status: "success",
+        message: "sign in successfully",
+        token: token,
+      });
 
-  //   } catch (error) {
-  //     await t.rollback();
-  //     return res.status(500).json({
-  //       status: "failed",
-  //       message: "Internal Server Error",
-  //     });
-  //   }
-  // },
+    } catch (error) {
+      console.log("🚀 ~ file: usersControllers.js ~ line 1172 ~ googleSignInWebVersion: ~ error", error)
+      await t.rollback();
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error",
+      });
+    }
+  },
 
   googleSignInMobVersion: async (req, res) => {
     const { token } = req.body;
