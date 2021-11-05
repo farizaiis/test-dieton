@@ -1,11 +1,12 @@
 const Joi = require('joi').extend(require('@joi/date'))
-const { weightMeasures, users } = require('../models')
+const { weightMeasures, users, sequelize } = require('../models')
 const { Op } = require('sequelize')
 
 
 module.exports = {
     postWeight: async(req, res) => {
         const body = req.body
+        const t = await sequelize.transaction();
         try {
             const todayDate = new Date()
             const today = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
@@ -69,7 +70,8 @@ module.exports = {
                 waistline: body.waistline,
                 thigh: body.thigh,
                 date: body.date
-            })
+            },
+            { transaction: t })
 
             const getUser = await users.findOne({
                 where: { id: req.users.id }
@@ -83,8 +85,13 @@ module.exports = {
             await users.update({
                 progress: newProgres,
                 BMI: Math.round(newBmi)
-            }, { where: { id: req.users.id } })
+            }, 
+            {
+                where: { id: req.users.id } 
+            },  
+            { transaction: t })
 
+            await t.commit()
 
             return res.status(200).json({
                 status: 'Success',
@@ -93,7 +100,11 @@ module.exports = {
             })
 
         } catch (error) {
-
+            await t.rollback()
+            return res.status(500).json({
+                status: "failed",
+                message: "Internal Server Error",
+            });
         }
     },
 
@@ -143,6 +154,7 @@ module.exports = {
         const weight = req.body.weight;
         const waistline = req.body.waistline;
         const thigh = req.body.thigh;
+        const t = await sequelize.transaction();
 
         try {
             const todayDate = new Date()
@@ -190,7 +202,8 @@ module.exports = {
                 thigh: thigh
             }, {
                 where: { userId: req.users.id, date: req.query.date }
-            });
+            },
+            { transaction : t });
 
             if (!updateWeight) {
                 return res.status(400).json({
@@ -211,14 +224,21 @@ module.exports = {
             await users.update({
                 progress: newProgres,
                 BMI: Math.round(newBmi)
-            }, { where: { id: req.users.id } })
+            }, 
+            {
+                where: { id: req.users.id } 
+            },
+            { transaction : t })
+
+            await t.commit()
 
             return res.status(200).json({
                 status: 'Success',
                 message: 'Data update successfully',
             });
         } catch (error) {
-            res.status(500).json({
+            await t.rollback()
+            return res.status(500).json({
                 status: 'failed',
                 message: 'Internal server error'
             })

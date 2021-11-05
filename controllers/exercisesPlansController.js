@@ -1,10 +1,11 @@
 const Joi = require('joi').extend(require('@joi/date'))
-const { exercisesPlans, exercises, calorieTrackers, users } = require('../models')
+const { exercisesPlans, exercises, calorieTrackers, users, sequelize } = require('../models')
 
 
 module.exports = {
     postListExercises : async (req, res) => {
         const body = req.body
+        const t = await sequelize.transaction()
         try {
             const todayDate = new Date()
             const today = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
@@ -79,7 +80,8 @@ module.exports = {
                     calAmount : cekExercise.dataValues.calorie * body.long,
                     alert : body.alert,
                     date : body.date
-                });
+                },
+                { transaction : t });
 
                 const cekCalorieTracker = await calorieTrackers.findOne({
                     where : {date : body.date, userId : req.users.id}
@@ -95,8 +97,11 @@ module.exports = {
                         calConsumed : 0,
                         remainCalSize : cekCalSize.dataValues.calorieSize,
                         date : body.date
-                    })
+                    },
+                    {transaction : t})
                 }
+
+                await t.commit()
 
                 return res.status(200).json({
                     status: "success",
@@ -114,7 +119,8 @@ module.exports = {
                     calAmount : Math.round((cekExercise.dataValues.calorie / 60) * body.long),
                     alert : body.alert,
                     date : body.date
-                });
+                },
+                { transaction : t });
 
                 const cekCalorieTracker = await calorieTrackers.findOne({
                     where : {date : body.date, userId : req.users.id}
@@ -130,8 +136,11 @@ module.exports = {
                         calConsumed : 0,
                         remainCalSize : cekCalSize.dataValues.calorieSize,
                         date : body.date
-                    })
+                    },
+                    { transaction : t })
                 }
+
+                await t.commit()
 
                 return res.status(200).json({
                     status: "success",
@@ -141,7 +150,7 @@ module.exports = {
             }
             
         } catch (error) {
-            console.log(error);
+            await t.rollback()
             return res.status(500).json({
             status: "failed",
             message: "Internal Server Error",
@@ -356,7 +365,6 @@ module.exports = {
             }
             
         } catch (error) {
-            console.log(error);
             return res.status(500).json({
             status: "failed",
             message: "Internal Server Error",
@@ -365,6 +373,7 @@ module.exports = {
     },
 
     updateStatus : async (req, res) => {
+        const t = await sequelize.transaction()
         try { 
             const cekListExercises = await exercisesPlans.findOne({
                 where : {
@@ -398,7 +407,8 @@ module.exports = {
             },
             {where : {
                 id : req.params.id
-            }}
+            }},
+            {transaction : t}
             );
 
             await calorieTrackers.update(
@@ -411,7 +421,10 @@ module.exports = {
                     userId : req.users.id,
                     date : cekListExercises.dataValues.date
                 }
-            })
+            },
+            { transaction : t })
+
+            await t.commit()
 
             return res.status(200).json({
                         status: "success",
@@ -419,7 +432,7 @@ module.exports = {
                     });
             
         } catch (error) {
-            console.log(error);
+            await t.rollback()
             return res.status(500).json({
             status: "failed",
             message: "Internal Server Error",
