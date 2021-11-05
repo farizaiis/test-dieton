@@ -4,7 +4,7 @@ const Joi = require('joi');
 const moment = require('moment');
 const { generateToken } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
-// const verify = require('../helper/googleHelper');
+const verify = require('../helper/googleHelper');
 const nodemailer = require('nodemailer');
 const randomstring = require('randomstring');
 
