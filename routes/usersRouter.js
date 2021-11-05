@@ -19,7 +19,7 @@ router.get('/userprofile', loginCheck, users.getUserById);
 router.get('/', loginCheck, authAdmin, users.getAllUser);
 router.put('/verifiedaccount/:id', users.verifiedAccount);
 router.put('/resetpassword', users.forgotPass);
-router.get("/signin/google", passport.authenticate("google", { scope: ["https://www.googleapis.com/auth/plus.login","profile", "email"] }));
+router.get("/signin/google", passport.authenticate("google", { scope: ["https://www.googleapis.com/auth/plus.login", "profile", "email"] }));
 router.get("/failed", (req, res) => res.send("Failed to login, please try again"));
 router.get("/google/callback", passport.authenticate("google", {
     failureRedirect: "/v1/users/failed",
