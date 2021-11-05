@@ -14,13 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       users.hasMany(models.mealsPlans, {as: 'mealsplans', foreignKey: 'userId'});
       users.hasMany(models.weightMeasures, {as: 'weightmeasures', foreignKey: 'userId'});
       users.hasMany(models.calorieTrackers, {as: 'calorietrackers', foreignKey: 'userId'});
-      users.belongsToMany(models.exercises,
-        {
-          through: models.exercisesPlans,
-          as : "exercisesplans"
-        });
+      users.hasMany(models.exercisesPlans, {as: 'exercisesplans', foreignKey: 'userId'});
     }
   };
+
   users.init({
     fullName: DataTypes.STRING,
     email: DataTypes.STRING,
