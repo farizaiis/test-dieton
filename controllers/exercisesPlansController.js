@@ -1,5 +1,4 @@
 const Joi = require('joi').extend(require('@joi/date'))
-const moment = require('moment');
 const { exercisesPlans, exercises, calorieTrackers, users } = require('../models')
 
 
@@ -7,12 +6,16 @@ module.exports = {
     postListExercises : async (req, res) => {
         const body = req.body
         try {
-            const today = moment.utc(new Date()).local().format("YYYY-M-D")
+            const todayDate = new Date()
+            const today = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
+            
+            const dataDate = new Date(body.date)
+            const cekDate = new Date(dataDate.getFullYear(), dataDate.getMonth(), dataDate.getDate())
 
-            if(moment.utc(new Date(body.date)).local().format("YYYY-M-D") < today) {
+            if (cekDate < today) {
                 return res.status(400).json({
-                    status : "failed",
-                    message : "Cant post date already passed"
+                    status: "failed",
+                    message: "Cant Create date already passed"
                 })
             }
 

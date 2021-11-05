@@ -155,7 +155,7 @@ module.exports = {
 
             if (!mealsplan) {
                 const allData = await listMeals.findAll({
-                    attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                    attributes : { exclude : ["createdAt", "updatedAt"] },
                     include : [{
                     model : foods
                 }]
@@ -169,7 +169,7 @@ module.exports = {
 
             const dataListMeals = await listMeals.findAll({
                 where : { mealsPlanId : mealsplan},
-                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                attributes : { exclude : ["createdAt", "updatedAt"] },
                 include : [{
                     model : foods
                 }]

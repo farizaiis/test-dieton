@@ -1,5 +1,4 @@
 const Joi = require('joi').extend(require('@joi/date'))
-const moment = require('moment')
 const { mealsPlans, foods, calorieTrackers, users } = require('../models')
 
 module.exports = {
@@ -26,12 +25,16 @@ module.exports = {
                 })
             }
 
-            const today = moment.utc(new Date()).local().format("YYYY-M-D")
+            const todayDate = new Date()
+            const today = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
+            
+            const dataDate = new Date(body.date)
+            const cekDate = new Date(dataDate.getFullYear(), dataDate.getMonth(), dataDate.getDate())
 
-            if(moment.utc(new Date(body.date)).local().format("YYYY-M-D") < today) {
+            if (cekDate < today) {
                 return res.status(400).json({
-                    status : "failed",
-                    message : "Cant post date already passed"
+                    status: "failed",
+                    message: "Cant Create date already passed"
                 })
             }
 
@@ -75,7 +78,7 @@ module.exports = {
 
             const cekData = await mealsPlans.findAll({
                 where : { userId : req.users.id, date : body.date},
-                attributes : { exclude : ["id", "createdAt", "updatedAt"] }
+                attributes : { exclude : ["createdAt", "updatedAt"] }
             })
 
             return res.status(200).json({
@@ -102,7 +105,7 @@ module.exports = {
             if(!dates) {
                 const getByUserId = await mealsPlans.findAll({
                     where : { userId : req.users.id },
-                    attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                    attributes : { exclude : ["createdAt", "updatedAt"] },
                     include : [{
                         model : foods,
                         as : "listmeals"
@@ -125,7 +128,7 @@ module.exports = {
 
             const getByDate = await mealsPlans.findAll({
                 where : { userId : req.users.id, date : dates },
-                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                attributes : { exclude : ["createdAt", "updatedAt"] },
                 include : [{
                     model : foods,
                     as : "listmeals"

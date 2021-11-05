@@ -1,3 +1,5 @@
-node_modules
+/node_modules
 .copy
 .env
+.env-template
+/seeders
