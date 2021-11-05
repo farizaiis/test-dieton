@@ -78,7 +78,7 @@ module.exports = {
 
             const cekData = await mealsPlans.findAll({
                 where : { userId : req.users.id, date : body.date},
-                attributes : { exclude : ["id", "createdAt", "updatedAt"] }
+                attributes : { exclude : ["createdAt", "updatedAt"] }
             })
 
             return res.status(200).json({
@@ -105,7 +105,7 @@ module.exports = {
             if(!dates) {
                 const getByUserId = await mealsPlans.findAll({
                     where : { userId : req.users.id },
-                    attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                    attributes : { exclude : ["createdAt", "updatedAt"] },
                     include : [{
                         model : foods,
                         as : "listmeals"
@@ -128,7 +128,7 @@ module.exports = {
 
             const getByDate = await mealsPlans.findAll({
                 where : { userId : req.users.id, date : dates },
-                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                attributes : { exclude : ["createdAt", "updatedAt"] },
                 include : [{
                     model : foods,
                     as : "listmeals"
