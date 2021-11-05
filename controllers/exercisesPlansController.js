@@ -193,7 +193,6 @@ module.exports = {
             })
             
         } catch (error) {
-            console.log(error);
             return res.status(500).json({
             status: "failed",
             message: "Internal Server Error",
@@ -208,7 +207,8 @@ module.exports = {
             if (!dates) {
                 const allData = await exercisesPlans.findAll({
                     include : [{
-                    model : exercises
+                    model : exercises,
+                    as: 'exercises'
                 }]
                 })
                 return res.status(200).json({
@@ -221,7 +221,8 @@ module.exports = {
             const dataListExercises = await exercisesPlans.findAll({
                 where : { date : dates },
                 include : [{
-                    model : exercises
+                    model : exercises,
+                    as: 'exercises'
                 }]
             })
 
