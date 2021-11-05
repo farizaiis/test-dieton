@@ -1,116 +1,118 @@
-const { users, calorieTrackers, weightMeasures } = require('../models');
+const { users, calorieTrackers, weightMeasures, sequelize } = require('../models');
 require('dotenv').config();
 const Joi = require('joi');
 const moment = require('moment');
 const { generateToken } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
+const verify = require('../helper/googleHelper');
 const nodemailer = require('nodemailer');
-const randomstring = require('randomstring');    
-
+const randomstring = require('randomstring');
 
 module.exports = {
-    signup: async (req, res) => {
-        const body = req.body
+  signup: async (req, res) => {
+    const body = req.body;
+    const t = await sequelize.transaction();
 
-        try {
-            const schema = Joi.object({
-                fullName: Joi.string().required(),
-                email: Joi.string().required(),
-                password: Joi.string().min(6).max(12).required(),
-                calorieSize: Joi.number().min(1000).max(2000).required(),
-                weight: Joi.number().required(),
-                height: Joi.number().required(),
-                waistline: Joi.number().required(),
-                thigh: Joi.number().required()
-            })
+    try {
+      const schema = Joi.object({
+        fullName: Joi.string().required(),
+        email: Joi.string().required(),
+        password: Joi.string().min(6).max(12).required(),
+        calorieSize: Joi.number().min(1000).max(2000).required(),
+        weight: Joi.number().required(),
+        height: Joi.number().required(),
+        waistline: Joi.number().required(),
+        thigh: Joi.number().required()
+      })
 
-            const check = schema.validate({
-                fullName: body.fullName,
-                email: body.email,
-                password: body.password,
-                calorieSize: body.calorieSize,
-                weight: body.weight,
-                height: body.height,
-                waistline: body.waistline,
-                thigh: body.thigh
-            }, { abortEarly: false });
+      const check = schema.validate({
+        fullName: body.fullName,
+        email: body.email,
+        password: body.password,
+        calorieSize: body.calorieSize,
+        weight: body.weight,
+        height: body.height,
+        waistline: body.waistline,
+        thigh: body.thigh
+      }, { abortEarly: false });
 
-            if (check.error) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "bad request",
-                    errors: check.error["details"].map(({ message }) => message)
-                });
-            }
+      if (check.error) {
+        return res.status(400).json({
+          status: "failed",
+          message: "bad request",
+          errors: check.error["details"].map(({ message }) => message)
+        });
+      }
 
-            const checkEmail = await users.findOne({
-                where: {
-                    email: body.email
-                }
-            });
+      const checkEmail = await users.findOne({
+        where: {
+          email: body.email
+        }
+      });
 
-            if (checkEmail) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "email already use, please use another email"
-                })
-            };
+      if (checkEmail) {
+        return res.status(400).json({
+          status: "failed",
+          message: "email already use, please use another email"
+        })
+      };
 
-            const userCheck = await users.create({
-                fullName: body.fullName,
-                email: body.email,
-                password: encrypt(body.password),
-                [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
-                [req.file ? "cover" : null]: req.file ? req.file.path : null,
-                height: body.height,
-                earlyWeight: body.weight,
-                calorieSize: body.calorieSize,
-                progress: 0,
-                BMI: Math.round(body.weight / ((body.height / 100) ** 2))
-            });
+      const userCheck = await users.create({
+        fullName: body.fullName,
+        email: body.email,
+        password: encrypt(body.password),
+        [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
+        [req.file ? "cover" : null]: req.file ? req.file.path : null,
+        height: body.height,
+        earlyWeight: body.weight,
+        calorieSize: body.calorieSize,
+        progress: 0,
+        BMI: Math.round(body.weight / ((body.height / 100) ** 2)),
+      }, { transaction: t });
 
-            const createCalorieSize = await calorieTrackers.create({
-                userId: userCheck.dataValues.id,
-                calConsumed: 0,
-                remainCalSize: body.calorieSize,
-                date: moment(new Date()).local().format("YYYY-M-D")
-            });
+      const createCalorieSize = await calorieTrackers.create({
+        userId: userCheck.dataValues.id,
+        calConsumed: 0,
+        remainCalSize: body.calorieSize,
+        date: moment(new Date()).local().format("YYYY-M-D")
+      }, { transaction: t });
 
-            const createWeightMeasure = await weightMeasures.create({
-                userId: userCheck.dataValues.id,
-                weight: body.weight,
-                waistline: body.waistline,
-                thigh: body.thigh,
-                date: moment(new Date()).local().format("YYYY-M-D")
-            })
+      const createWeightMeasure = await weightMeasures.create({
+        userId: userCheck.dataValues.id,
+        weight: body.weight,
+        waistline: body.waistline,
+        thigh: body.thigh,
+        date: moment(new Date()).local().format("YYYY-M-D")
+      }, { transaction: t });
 
+      await t.commit()
 
-            const payload = {
-                role: userCheck.dataValues.role,
-                email: userCheck.dataValues.email,
-                id: userCheck.dataValues.id
-            };
+      const payload = {
+        role: userCheck.dataValues.role,
+        email: userCheck.dataValues.email,
+        id: userCheck.dataValues.id
+      };
 
-            const token = generateToken(payload);
+      const token = generateToken(payload);
 
-            const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                secure: true,
-                auth: {
-                    user: process.env.EMAIL_ADMIN,
-                    pass: process.env.PASS_ADMIN
-                },
-                tls: {
-                    rejectUnauthorized: false
-                }
-            });
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.EMAIL_ADMIN,
+          pass: process.env.PASS_ADMIN
+        },
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
 
-            const mailOptions = {
-                from: process.env.EMAIL_ADMIN,
-                to: body.email,
-                subject: 'Verified Your Email',
-                html: `<!DOCTYPE html>
+      const mailOptions = {
+        from: process.env.EMAIL_ADMIN,
+        to: body.email,
+        subject: 'Verified Your Email',
+        html: `<!DOCTYPE html>
                 <html>
                 <head>
                 
@@ -167,7 +169,7 @@ module.exports = {
                     text-decoration: none !important;
                   }
                 
-                 
+
                   div[style*="margin: 16px 0;"] {
                     margin: 0 !important;
                   }
@@ -347,429 +349,501 @@ module.exports = {
                 
                 </body>
                 </html>`
-            };
+      };
 
-            transporter.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    console.log(error);
-                } else {
-                    console.log('Email sent: ' + info.response)
-                }
-            });
+      let Email = ""
 
-            return res.status(200).json({
-                status: "success",
-                message: "sign up successfully, and please check your email to verified",
-                token: token,
-                dataUser: userCheck,
-                dataCalorie: createCalorieSize,
-                dataWeight: createWeightMeasure
-            });
-
-        } catch (error) {
-            console.log("🚀 ~ file: usersControllers.js ~ line 79 ~ signup: ~ error", error)
-            return res.status(500).json({
-                status: "failed",
-                message: "Internal Server Error",
-            });
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          Email = "Email Sent"
         }
-    },
+      });
 
-    signin: async (req, res) => {
-        const body = req.body
+      const dataUser = await users.findOne({
+        where: {
+          id: userCheck.dataValues.id
+        },
+        attributes: {exclude: ["password", "createdAt", "updatedAt"]},
+      });
 
-        try {
-            const schema = Joi.object({
-                email: Joi.string().required(),
-                password: Joi.string().required()
-            });
+      return res.status(200).json({
+        status: "success",
+        message: "sign up successfully, and please check your email to verified",
+        token: token,
+        dataUser: dataUser,
+        dataCalorie: createCalorieSize,
+        dataWeight: createWeightMeasure,
+        email_status: Email
+      });
 
-            const check = schema.validate({
-                email: body.email,
-                password: body.password
-            }, { abortEarly: false });
+    } catch (error) {
+      await t.rollback()
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error",
+      });
+    }
+  },
 
-            if (check.error) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "bad request",
-                    errors: check.error["details"].map(({ message }) => message)
-                });
-            }
+  signin: async (req, res) => {
+    const body = req.body
 
-            const userEmailData = await users.findOne({
-                where: {
-                    email: body.email
-                }
-            })
+    try {
+      const schema = Joi.object({
+        email: Joi.string().required(),
+        password: Joi.string().required()
+      });
 
-            if (!userEmailData) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "invalid email"
-                })
-            }
+      const check = schema.validate({
+        email: body.email,
+        password: body.password
+      }, { abortEarly: false });
 
-            const checkPass = comparePass(body.password, userEmailData.dataValues.password)
+      if (check.error) {
+        return res.status(400).json({
+          status: "failed",
+          message: "bad request",
+          errors: check.error["details"].map(({ message }) => message)
+        });
+      }
 
-            if (!checkPass) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "wrong password"
-                })
-            }
-
-            if (userEmailData.dataValues.isVerified === false) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "please verified your email first"
-                })
-            }
-
-            const payload = {
-                role: userEmailData.dataValues.role,
-                email: userEmailData.dataValues.email,
-                id: userEmailData.dataValues.id
-            }
-
-            const token = generateToken(payload)
-
-            return res.status(200).json({
-                status: "success",
-                message: "sign in successfully",
-                token: token
-            })
-
-        } catch (error) {
-            console.log("🚀 ~ file: usersControllers.js ~ line 444 ~ signin: ~ error", error)
-            return res.status(500).json({
-                status: "failed",
-                message: "internal server error"
-            })
+      const userEmailData = await users.findOne({
+        where: {
+          email: body.email
         }
-    },
+      })
 
-    delete: async (req, res) => {
-        const id = req.params.id
+      if (!userEmailData) {
+        return res.status(400).json({
+          status: "failed",
+          message: "invalid email"
+        })
+      }
 
-        try {
-            const dataToken = req.users;
-            console.log("🚀 ~ file: usersControllers.js ~ line 157 ~ delete: ~ dataToken", dataToken)
+      const checkPass = comparePass(body.password, userEmailData.dataValues.password)
 
-            const userData = await users.findOne({
-                where: {
-                    id: id
-                }
-            })
+      if (!checkPass) {
+        return res.status(400).json({
+          status: "failed",
+          message: "wrong password"
+        })
+      }
 
-            if (!userData) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "data not found"
-                })
-            };
+      if (userEmailData.dataValues.isVerified === false) {
+        return res.status(400).json({
+          status: "failed",
+          message: "please verified your email first"
+        })
+      }
 
-            if (userData.id !== dataToken.id) {
-                return res.status(401).json({
-                    status: "failed",
-                    message: "not authorize"
-                })
-            }
+      const payload = {
+        role: userEmailData.dataValues.role,
+        email: userEmailData.dataValues.email,
+        id: userEmailData.dataValues.id
+      }
 
-            const dataUser = await users.destroy({
-                where: {
-                    id: id
-                }
-            })
+      const token = generateToken(payload)
 
-            return res.status(200).json({
-                status: "success",
-                message: "data has been deleted"
-            })
-        } catch (error) {
-            console.log("🚀 ~ file: usersControllers.js ~ line 189 ~ delete: ~ error", error)
-            return res.status(500).json({
-                status: "failed",
-                message: "Internal Server Error"
-            })
+      return res.status(200).json({
+        status: "success",
+        message: "sign in successfully",
+        token: token
+      })
+
+    } catch (error) {
+      return res.status(500).json({
+        status: "failed",
+        message: "internal server error"
+      })
+    }
+  },
+
+  delete: async (req, res) => {
+    const id = req.params.id
+
+    try {
+      const dataToken = req.users;
+
+      const userData = await users.findOne({
+        where: {
+          id: id
         }
-    },
+      })
 
-    updateUserProfile: async (req, res) => {
-        const body = req.body;
+      if (!userData) {
+        return res.status(400).json({
+          status: "failed",
+          message: "data not found"
+        })
+      };
 
-        try {
-            const schema = Joi.object({
-                fullName: Joi.string(),
-                password: Joi.string().min(6).max(12),
-                profilePic: Joi.string(),
-                cover: Joi.string(),
-                height: Joi.number()
-            })
+      if (userData.id !== dataToken.id) {
+        return res.status(401).json({
+          status: "failed",
+          message: "not authorize"
+        })
+      }
 
-            const check = schema.validate({
-                fullName: body.fullName,
-                password: body.password,
-                profilePic: req.file ? req.file.path : "profilePic",
-                cover: req.file ? req.file.path : "cover",
-                height: body.height
-            }, { abortEarly: false });
-
-            if (check.error) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "Bad Request",
-                    errors: error["details"].map(({ message }) => message)
-                })
-            };
-
-            const dataUser = await users.findOne({
-                where: {
-                    id: req.users.id
-                }
-            })
-
-            if (!dataUser) {
-                return res.status(400).json({
-                    status: " failed",
-                    message: "data not found"
-                })
-            }
-
-            if (body.password) {
-                const dataUser = await users.findOne({
-                    where: {
-                        id: req.users.id
-                    }
-                });
-
-                const checkPass = comparePass(body.password, dataUser.dataValues.password)
-
-                if (checkPass) {
-                    return res.status(400).json({
-                        status: "failed",
-                        message: "please add another password"
-                    })
-                }
-
-                await users.update({
-                    password: encrypt(body.password)
-                }, {
-                    where: {
-                        id: req.users.id
-                    }
-                })
-            };
-
-            const updateUser = await users.update({
-                fullName: body.fullName,
-                [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
-                [req.file ? "cover" : null]: req.file ? req.file.path : null,
-                height: body.height
-            },
-                {
-                    where: {
-                        id: req.users.id
-                    }
-                });
-
-            if (!updateUser) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "unable to input the data"
-                })
-            };
-
-            const userFinalUpdate = await users.findOne({
-                where: {
-                    id: req.users.id
-                }
-            })
-
-            return res.status(200).json({
-                status: "success",
-                message: "update successfully",
-                data: userFinalUpdate
-            });
-
-        } catch (error) {
-            console.log("🚀 ~ file: usersControllers.js ~ line 316 ~ update: ~ error", error)
-            return res.status(500).json({
-                status: "failed",
-                message: "Internal Server Error"
-            })
+      const dataUser = await users.destroy({
+        where: {
+          id: id
         }
-    },
+      })
 
-    getUserById: async (req, res) => {
+      return res.status(200).json({
+        status: "success",
+        message: "data has been deleted"
+      })
+    } catch (error) {
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error"
+      })
+    }
+  },
 
-        try {
-            const dataToken = req.users
+  updateUserProfile: async (req, res) => {
+    const body = req.body;
+    const t = await sequelize.transaction();
 
-            const profileUser = await users.findOne({
-                where: {
-                    id: req.users.id
-                },
+    try {
+      const schema = Joi.object({
+        fullName: Joi.string(),
+        password: Joi.string().min(6).max(12),
+        profilePic: Joi.string(),
+        height: Joi.number(),
+      })
 
-            });
+      const check = schema.validate({
+        fullName: body.fullName,
+        password: body.password,
+        profilePic: req.file ? req.file.path : "profilePic",
+        height: body.height,
+      }, { abortEarly: false });
 
-            if (!profileUser) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "data not found"
-                })
-            };
+      if (check.error) {
+        return res.status(400).json({
+          status: "failed",
+          message: "Bad Request",
+          errors: check.error["details"].map(({ message }) => message)
+        })
+      };
 
-            if (profileUser.id !== dataToken.id) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "not authorize"
-                })
-            };
-
-            return res.status(200).json({
-                status: "success",
-                message: "successfully retrieved data",
-                data: profileUser
-            })
-        } catch (error) {
-            console.log("🚀 ~ file: usersControllers.js ~ line 326 ~ getUserById: ~ error", error)
-            return res.status(500).json({
-                status: "failed",
-                message: "Internal Server Error"
-            })
+      const dataUser = await users.findOne({
+        where: {
+          id: req.users.id
         }
-    },
+      })
 
-    getAllUser: async (req, res) => {
-        try {
-            const getAll = await users.findAll()
+      if (!dataUser) {
+        return res.status(400).json({
+          status: "failed",
+          message: "data not found"
+        })
+      }
 
-            return res.status(200).json({
-                status: "success",
-                message: "success retrieved data",
-                data: getAll
-            })
-        } catch (error) {
-            return res.status(500).json({
-                status: "failed",
-                message: "Internal Server Error"
-            })
-        }
-    },
+      if (body.password) {
+        const checkPass = comparePass(body.password, dataUser.dataValues.password)
 
-    verifiedAccount: async (req, res) => {
-        const id = req.params.id
-
-        try {
-
-            const checkUser = await users.findOne({
-              where: {
-                id: id
-              }
-            })
-
-            if (!checkUser) {
-              return res.status(400).json({
-                status: "failed",
-                message: "data not found"
-              })
-            }
-            
-            await users.update({
-                isVerified: true
-            },
-                {
-                    where: {
-                        id: id
-                    }
-                })
-
-            return res.status(200).json({
-                status: "success",
-                message: "successfully verified, please sign in again"
-            })
-        } catch (error) {
-            return res.status(500).json({
-                status: "failed",
-                message: "Internal Server Error",
-            });
+        if (checkPass) {
+          return res.status(400).json({
+            status: "failed",
+            message: "please add another password"
+          })
         }
 
-    },
+        await users.update({
+          password: encrypt(body.password)
+        }, {
+          where: {
+            id: req.users.id
+          }
+        }, { transaction: t })
+      };
 
-    forgotPass: async (req, res) => {
-        const body = req.body
+      const updateUser = await users.update({
+        fullName: body.fullName,
+        [req.file ? "profilePic" : null]: req.file ? req.file.path : null,
+        height: body.height,
+      },
+        {
+          where: {
+            id: req.users.id
+          }
+        }, { transaction: t });
 
-        try {
-            const schema = Joi.object({
-                email: Joi.string().required(),
-            })
+      await t.commit()
 
-            const check = schema.validate({
-                email: body.email
-            }, { abortEarly: false });
+      if (!updateUser) {
+        return res.status(400).json({
+          status: "failed",
+          message: "unable to input the data"
+        })
+      };
 
-            if (check.error) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "bad request",
-                    error: check.error["details"].map(({ message }) => message)
-                });
-            }
+      const userFinalUpdate = await users.findOne({
+        where: {
+          id: req.users.id
+        },
+        attributes: {exclude: ["password", "createdAt", "updatedAt"]},
+      });
 
-            const checkUser = await users.findOne({
-                where: {
-                    email: body.email
-                }
-            })
+      return res.status(200).json({
+        status: "success",
+        message: "update successfully",
+        data: userFinalUpdate
+      });
 
-            if (!checkUser) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "please register first"
-                })
-            }
+    } catch (error) {
+      await t.rollback();
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error"
+      });
+    }
+  },
 
-            if (checkUser.dataValues.isVerified === false) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "please verified your account first"
-                })
-            }
+  uploadCover: async (req, res) => {
 
-            const passReset = randomstring.generate({
-                length: 12,
-                charset: 'hex'
-            });
+    try {
+      const schema = Joi.object({
+        cover: Joi.string()
+      });
 
-            const resetPass = await users.update({
-                password: encrypt(passReset)
-            },
-                {
-                    where: {
-                        email: body.email
-                    }
-                })
+      const check = schema.validate({
+        cover: req.file ? req.file.path : "cover",
+      }, { abortEarly: false });
 
-            const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                secure: true,
-                auth: {
-                    user: process.env.EMAIL_ADMIN,
-                    pass: process.env.PASS_ADMIN
-                },
-                tls: {
-                    rejectUnauthorized: false
-                }
-            });
+      if (check.error) {
+        return res.status(400).json({
+          status: "failed",
+          message: "Bad Request",
+          errors: check.error["details"].map(({ message }) => message)
+        })
+      };
 
-            const mailOptions = {
-                from: process.env.EMAIL_ADMIN,
-                to: body.email,
-                subject: 'Reset Password',
-                html: `<!DOCTYPE html>
+      const dataUser = await users.findOne({
+        where: {
+          id: req.users.id
+        }
+      });
+
+      if (!dataUser) {
+        return res.status(400).json({
+          status: "failed",
+          message: "data not found",
+        })
+      };
+
+      const updateCover = await users.update({
+        [req.file ? "cover" : null]: req.file ? req.file.path : null
+      },
+        {
+          where: {
+            id: req.users.id
+          }
+        });
+
+      if (!updateCover) {
+        return res.status(400).json({
+          status: "failed",
+          message: "unable to input the data",
+        })
+      };
+
+      const dataUserUpdateCover = await users.findOne({
+        where: {
+          id: req.users.id
+        },
+        attributes: {exclude: ["password", "createdAt", "updatedAt"]},
+      });
+
+      return res.status(200).json({
+        status: "success",
+        message: "update cover successfully",
+        data: dataUserUpdateCover
+      })
+
+    } catch (error) {
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error"
+      })
+    }
+  },
+
+  getUserById: async (req, res) => {
+
+    try {
+      const dataToken = req.users
+
+      const profileUser = await users.findOne({
+        where: {
+          id: req.users.id
+        },
+        attributes: {exclude: ["password", "createdAt", "updatedAt"]},
+      });
+
+      if (!profileUser) {
+        return res.status(400).json({
+          status: "failed",
+          message: "data not found"
+        })
+      };
+
+      if (profileUser.id !== dataToken.id) {
+        return res.status(400).json({
+          status: "failed",
+          message: "not authorize"
+        })
+      };
+
+      return res.status(200).json({
+        status: "success",
+        message: "successfully retrieved data",
+        data: profileUser
+      })
+    } catch (error) {
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error"
+      })
+    }
+  },
+
+  getAllUser: async (req, res) => {
+    try {
+      const getAll = await users.findAll({
+        attributes: {exclude: ["password", "createdAt", "updatedAt"]}
+      });
+
+      return res.status(200).json({
+        status: "success",
+        message: "success retrieved data",
+        data: getAll
+      })
+    } catch (error) {
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error"
+      })
+    }
+  },
+
+  verifiedAccount: async (req, res) => {
+    const id = req.params.id
+
+    try {
+
+      const checkUser = await users.findOne({
+        where: {
+          id: id
+        }
+      })
+
+      if (!checkUser) {
+        return res.status(400).json({
+          status: "failed",
+          message: "data not found"
+        })
+      }
+
+      await users.update({
+        isVerified: true
+      },
+        {
+          where: {
+            id: id
+          }
+        })
+
+      return res.status(200).json({
+        status: "success",
+        message: "successfully verified, please sign in again"
+      })
+    } catch (error) {
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error",
+      });
+    }
+
+  },
+
+  forgotPass: async (req, res) => {
+    const body = req.body
+
+    try {
+      const schema = Joi.object({
+        email: Joi.string().required(),
+      })
+
+      const check = schema.validate({
+        email: body.email
+      }, { abortEarly: false });
+
+      if (check.error) {
+        return res.status(400).json({
+          status: "failed",
+          message: "bad request",
+          error: check.error["details"].map(({ message }) => message)
+        });
+      }
+
+      const checkUser = await users.findOne({
+        where: {
+          email: body.email
+        }
+      })
+
+      if (!checkUser) {
+        return res.status(400).json({
+          status: "failed",
+          message: "please register first"
+        })
+      }
+
+      if (checkUser.dataValues.isVerified === false) {
+        return res.status(400).json({
+          status: "failed",
+          message: "please verified your account first"
+        })
+      }
+
+      const passReset = randomstring.generate({
+        length: 12,
+        charset: 'hex'
+      });
+
+      const resetPass = await users.update({
+        password: encrypt(passReset)
+      },
+        {
+          where: {
+            email: body.email
+          }
+        })
+
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.EMAIL_ADMIN,
+          pass: process.env.PASS_ADMIN
+        },
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
+
+      const mailOptions = {
+        from: process.env.EMAIL_ADMIN,
+        to: body.email,
+        subject: 'Reset Password',
+        html: `<!DOCTYPE html>
                 <html>
                 <head>
                 
@@ -1006,88 +1080,175 @@ module.exports = {
                 
                 </body>
                 </html>`
-            };
+      };
 
-            transporter.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    console.log(error);
-                } else {
-                    console.log('Email sent: ' + info.response)
-                }
-            });
+      let Email = ""
 
-            return res.status(200).json({
-                status: "success",
-                message: "successfully reset password, and please check email for your new password"
-            });
-        } catch (error) {
-            console.log("🚀 ~ file: usersControllers.js ~ line 499 ~ forgotPass:async ~ error", error)
-            return res.status(500).json({
-                status: "failed",
-                message: "Internal Server Error",
-            });
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          Email = "Email Sent"
         }
-    },
+      });
 
-    googleSignIn: async (req, res) => {
-        let payload;
-        try {
-            const userCheck = await users.findOne({
-                where: {
-                    email: req.user._json.email
-                }
-            })
-
-            if (userCheck) {
-                payload = {
-                    role: userCheck.dataValues.role,
-                    email: userCheck.dataValues.email,
-                    id: userCheck.dataValues.id
-                }
-            } else {
-                const createProfile = await users.create({
-                    fullName: req.user._json.name,
-                    email: req.user._json.email,
-                    profilePic: req.user._json.picture,
-                    password: "undefined",
-                    height: 0,
-                    earlyWeight: 0,
-                    calorieSize: 0,
-                    progress: 0,
-                    BMI: 0,
-                    isVerified: true
-                })
-                
-                const createCalorie = await calorieTrackers.create({
-                    userId: createProfile.dataValues.id,
-                    calConsumed: 0,
-                    remainCalSize: 0,
-                    data: moment(new Date()).local().format("YYYY-M-D")
-                })
-                
-                const createWeight = await weightMeasures.create({
-                    userId: createProfile.dataValues.id,
-                    weight: 0,
-                    waistline: 0,
-                    thigh: 0,
-                    date: moment(new Date()).local().format("YYYY-M-D")
-                });
-                payload = {
-                    role: createProfile.dataValues.role,
-                    email: createProfile.dataValues.email,
-                    id: createProfile.dataValues.id
-                }
-            };
-
-            const token = generateToken(payload)
-
-            return res.redirect('/?token=' + token)
-
-        } catch (error) {
-            return res.status(500).json({
-                status: "failed",
-                message: "Internal Server Error",
-            });
-        }
+      return res.status(200).json({
+        status: "success",
+        message: "successfully reset password, and please check email for your new password",
+        emailStatus: Email,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error",
+      });
     }
+  },
+
+  // googleSignInWebVersion: async (req, res) => {
+  //   const t = await sequelize.transaction();
+  //   let payload;
+  //   try {
+  //     const userGooglePass = `${req.users._json.azp}${req.users._json.email}${req.users._json.iat}`
+  //     const userCheck = await users.findOne({
+  //       where: {
+  //         email: req.users._json.email
+  //       }
+  //     })
+
+  //     if (userCheck) {
+  //       payload = {
+  //         role: userCheck.dataValues.role,
+  //         email: userCheck.dataValues.email,
+  //         id: userCheck.dataValues.id
+  //       }
+  //     } else {
+  //       const createProfile = await users.create({
+  //         fullName: req.users._json.name,
+  //         email: req.users._json.email,
+  //         profilePic: req.users._json.picture,
+  //         password: encrypt(userGooglePass),
+  //         height: 0,
+  //         earlyWeight: 0,
+  //         calorieSize: 0,
+  //         progress: 0,
+  //         BMI: 0,
+  //         isVerified: true
+  //       }, { transaction: t });
+
+  //       const createCalorie = await calorieTrackers.create({
+  //         userId: createProfile.dataValues.id,
+  //         calConsumed: 0,
+  //         remainCalSize: 0,
+  //         data: moment(new Date()).local().format("YYYY-M-D")
+  //       }, { transaction: t });
+
+  //       const createWeight = await weightMeasures.create({
+  //         userId: createProfile.dataValues.id,
+  //         weight: 0,
+  //         waistline: 0,
+  //         thigh: 0,
+  //         date: moment(new Date()).local().format("YYYY-M-D")
+  //       }, { transaction: t });
+
+  //       await t.commit()
+
+  //       payload = {
+  //         role: createProfile.dataValues.role,
+  //         email: createProfile.dataValues.email,
+  //         id: createProfile.dataValues.id
+  //       };
+  //     };
+
+  //     const token = generateToken(payload)
+
+  //     return res.status(200).json({
+  //       status: "success",
+  //       message: "sign in successfully",
+  //       token: token,
+  //     });
+
+  //   } catch (error) {
+  //     await t.rollback();
+  //     return res.status(500).json({
+  //       status: "failed",
+  //       message: "Internal Server Error",
+  //     });
+  //   }
+  // },
+
+  googleSignInMobVersion: async (req, res) => {
+    const { token } = req.body;
+    const googleAuth = await verify(token);
+    const t = await sequelize.transaction();
+    const userGooglePass = `${googleAuth.azp}${googleAuth.email}${googleAuth.iat}`
+    let payload;
+
+    try {
+      const userCheck = await users.findOne({
+        where: {
+          email: googleAuth.email
+        }
+      })
+
+      if (userCheck) {
+        payload = {
+          role: userCheck.dataValues.role,
+          email: userCheck.dataValues.email,
+          id: userCheck.dataValues.id
+        }
+      } else {
+        const createProfile = await users.create({
+          fullName: googleAuth.name,
+          email: googleAuth.email,
+          profilePic: googleAuth.picture,
+          password: encrypt(userGooglePass),
+          height: 0,
+          earlyWeight: 0,
+          calorieSize: 0,
+          progress: 0,
+          BMI: 0,
+          isVerified: true
+        }, { transaction: t });
+
+        const createCalorie = await calorieTrackers.create({
+          userId: createProfile.dataValues.id,
+          calConsumed: 0,
+          remainCalSize: 0,
+          data: moment(new Date()).local().format("YYYY-M-D")
+        }, { transaction: t });
+
+        const createWeight = await weightMeasures.create({
+          userId: createProfile.dataValues.id,
+          weight: 0,
+          waistline: 0,
+          thigh: 0,
+          date: moment(new Date()).local().format("YYYY-M-D")
+        }, { transaction: t });
+
+        await t.commit()
+
+        payload = {
+          role: createProfile.dataValues.role,
+          email: createProfile.dataValues.email,
+          id: createProfile.dataValues.id
+        }
+      };
+
+      const token = generateToken(payload)
+
+      return res.status(200).json({
+        status: "success",
+        message: "sign in successfully",
+        token: token
+      });
+
+    } catch (error) {
+      await t.rollback()
+      return res.status(500).json({
+        status: "failed",
+        message: "Internal Server Error",
+      });
+    }
+  }
 };

@@ -1,10 +1,11 @@
 const Joi = require('joi')
-const { listMeals, foods, mealsPlans } = require('../models')
+const { listMeals, foods, mealsPlans, sequelize } = require('../models')
 
 
 module.exports = {
     postListMeals : async (req, res) => {
         const body = req.body
+        const t = await sequelize.transaction();
         try {
             const schema = Joi.object({
                 mealsPlanId : Joi.number().required(),
@@ -76,11 +77,15 @@ module.exports = {
                 foodId : body.foodId,
                 qty : body.qty,
                 calAmount : cekFood.dataValues.calorie * body.qty
-            });
+            },
+            { transaction : t });
 
             await mealsPlans.update({
                 totalCalAmount : (cekMealsPlan.dataValues.totalCalAmount + dataListMeals.dataValues.calAmount)
-            }, { where : {id : body.mealsPlanId}})
+            }, { where : {id : body.mealsPlanId}},
+            { transaction : t })
+
+            await t.commit()
 
             return res.status(200).json({
                         status: "success",
@@ -89,7 +94,7 @@ module.exports = {
                     });
             
         } catch (error) {
-            console.log(error);
+            await t.rollback()
             return res.status(500).json({
             status: "failed",
             message: "Internal Server Error",
@@ -98,6 +103,7 @@ module.exports = {
     },
 
     deleteListMeals : async (req, res) => {
+        const t = await sequelize.transaction()
         try {
             const cekListMeals = await listMeals.findOne({
                 where : {
@@ -125,15 +131,19 @@ module.exports = {
                 });
             }
 
-            await mealsPlans.update({
-                totalCalAmount : (cekMealsPlan.dataValues.totalCalAmount - cekListMeals.dataValues.calAmount)
-            }, { where : {id : cekMealsPlan.dataValues.id}})
-
             await listMeals.destroy({
                 where : {
                     id : req.params.id
                 }
-            });
+            },
+            { transaction : t });
+
+            await mealsPlans.update({
+                totalCalAmount : (cekMealsPlan.dataValues.totalCalAmount - cekListMeals.dataValues.calAmount)
+            }, { where : {id : cekMealsPlan.dataValues.id}},
+            { transaction : t })
+
+            await t.commit()
 
             return res.status(200).json({
                         status: "success",
@@ -141,7 +151,7 @@ module.exports = {
             })
             
         } catch (error) {
-            console.log(error);
+            await t.rollback()
             return res.status(500).json({
             status: "failed",
             message: "Internal Server Error",
@@ -155,7 +165,7 @@ module.exports = {
 
             if (!mealsplan) {
                 const allData = await listMeals.findAll({
-                    attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                    attributes : { exclude : ["createdAt", "updatedAt"] },
                     include : [{
                     model : foods
                 }]
@@ -169,7 +179,7 @@ module.exports = {
 
             const dataListMeals = await listMeals.findAll({
                 where : { mealsPlanId : mealsplan},
-                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                attributes : { exclude : ["createdAt", "updatedAt"] },
                 include : [{
                     model : foods
                 }]
@@ -196,6 +206,7 @@ module.exports = {
     },
 
     updateQtyMeals : async (req, res) => {
+        const t = await sequelize.transaction()
         try {
             const schema = Joi.object({
                 qty : Joi.number(),
@@ -260,7 +271,8 @@ module.exports = {
                     qty : req.body.qty,
                     calAmount : dataFood.dataValues.calorie * req.body.qty
                 }, 
-                {where : {id : req.params.id}}
+                {where : {id : req.params.id}},
+                { transaction : t }
             )
 
             const getMeals = await listMeals.findOne({
@@ -269,7 +281,10 @@ module.exports = {
 
             await mealsPlans.update({
                 totalCalAmount : (cekMealsPlan.dataValues.totalCalAmount - oldCalAmount + getMeals.dataValues.calAmount)
-            }, { where : {id : cekMealsPlan.dataValues.id}})
+            }, { where : {id : cekMealsPlan.dataValues.id}},
+            {transaction : t})
+
+            await t.commit()
 
             return res.status(200).json({
                         status: "success",
@@ -278,7 +293,7 @@ module.exports = {
             })
             
         } catch (error) {
-            console.log(error);
+            await t.rollback()
             return res.status(500).json({
             status: "failed",
             message: "Internal Server Error",

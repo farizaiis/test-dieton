@@ -27,7 +27,7 @@ module.exports = {
         onDelete : "CASCADE"
       },
       long: {
-        type: Sequelize.STRING
+        type: Sequelize.INTEGER
       },
       time : {
         type: Sequelize.ENUM('Hours', 'Minutes')

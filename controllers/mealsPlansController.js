@@ -1,10 +1,10 @@
 const Joi = require('joi').extend(require('@joi/date'))
-const moment = require('moment')
-const { mealsPlans, foods, calorieTrackers, users } = require('../models')
+const { mealsPlans, foods, calorieTrackers, users, sequelize } = require('../models')
 
 module.exports = {
     postMealsPlans : async (req, res) => {
         const body = req.body
+        const t = await sequelize.transaction();
         try {
             const schema = Joi.object({
                 userId : Joi.number(),
@@ -26,12 +26,16 @@ module.exports = {
                 })
             }
 
-            const today = moment.utc(new Date()).local().format("YYYY-M-D")
+            const todayDate = new Date()
+            const today = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
+            
+            const dataDate = new Date(body.date)
+            const cekDate = new Date(dataDate.getFullYear(), dataDate.getMonth(), dataDate.getDate())
 
-            if(moment.utc(new Date(body.date)).local().format("YYYY-M-D") < today) {
+            if (cekDate < today) {
                 return res.status(400).json({
-                    status : "failed",
-                    message : "Cant post date already passed"
+                    status: "failed",
+                    message: "Cant Create date already passed"
                 })
             }
 
@@ -54,7 +58,8 @@ module.exports = {
                 userId : req.users.id,
                 mealsTime : body.mealsTime,
                 date : body.date
-            });
+            },
+            { transaction : t });
 
             const cekCalorieTracker = await calorieTrackers.findOne({
                 where : {date : body.date, userId : req.users.id}
@@ -70,12 +75,14 @@ module.exports = {
                     calConsumed : 0,
                     remainCalSize : cekCalSize.dataValues.calorieSize,
                     date : body.date
-                })
+                },
+                { transaction : t })
             }
 
+            await t.commit()
             const cekData = await mealsPlans.findAll({
                 where : { userId : req.users.id, date : body.date},
-                attributes : { exclude : ["id", "createdAt", "updatedAt"] }
+                attributes : { exclude : ["createdAt", "updatedAt"] }
             })
 
             return res.status(200).json({
@@ -85,6 +92,7 @@ module.exports = {
                     });
             
         } catch (error) {
+            await t.rollback()
             if (error.name === "SequelizeDatabaseError" && error.parent.routine === "enum_in") {
                 return res.status(400).json({ status : "failed", message: "Breakfast, Lunch, or Dinner only for meals time" })
             }
@@ -102,7 +110,7 @@ module.exports = {
             if(!dates) {
                 const getByUserId = await mealsPlans.findAll({
                     where : { userId : req.users.id },
-                    attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                    attributes : { exclude : ["createdAt", "updatedAt"] },
                     include : [{
                         model : foods,
                         as : "listmeals"
@@ -125,7 +133,7 @@ module.exports = {
 
             const getByDate = await mealsPlans.findAll({
                 where : { userId : req.users.id, date : dates },
-                attributes : { exclude : ["id", "createdAt", "updatedAt"] },
+                attributes : { exclude : ["createdAt", "updatedAt"] },
                 include : [{
                     model : foods,
                     as : "listmeals"
@@ -153,6 +161,7 @@ module.exports = {
     },
 
     updateStatus : async (req, res) => {
+        const t = await sequelize.transaction();
         try { 
             const cekMealsPlans = await mealsPlans.findOne({
                 where : {
@@ -190,7 +199,8 @@ module.exports = {
                 userId : req.users.id,
                 mealsTime : req.query.type,
                 date : req.query.date,
-            }}
+            }},
+            { transaction : t }
             );
 
             await calorieTrackers.update(
@@ -203,7 +213,10 @@ module.exports = {
                     userId : req.users.id,
                     date : req.query.date
                 }
-            })
+            },
+            { transaction : t })
+
+            await t.commit()
 
             return res.status(200).json({
                         status: "success",
@@ -211,7 +224,7 @@ module.exports = {
                     });
             
         } catch (error) {
-            console.log(error);
+            await t.rollback()
             return res.status(500).json({
             status: "failed",
             message: "Internal Server Error",
