@@ -20,9 +20,21 @@ module.exports = {
             });
 
             if (!dataCalorie) {
-                return res.status(400).json({
-                    status: "failed",
-                    message: "data not found",
+                const calSizeUser = await users.findOne({
+                    where : { id : req.users.id }
+                })
+            
+                const createCalTrack = await calorieTrackers.create({
+                    userId : req.users.id,
+                    calConsumed : 0,
+                    remainCalSize : calSizeUser.dataValues.calorieSize,
+                    date : new Date(dateData.getFullYear(), dateData.getMonth(), dateData.getDate())
+                })
+
+                return res.status(200).json({
+                    status: "success",
+                    message: "success retreived data",
+                    data: createCalTrack
                 })
             };
 
