@@ -6,7 +6,7 @@ const { authAdmin } = require('../middlewares/authorization')
 const uploadProfilePic = require('../middlewares/uploadProfilePic')
 const uploadCover = require('../middlewares/uploadCover')
 const passport = require('../middlewares/passport')
-const { googleSignInWebVersion } = require('../controllers/usersControllers')
+const { googleSignInWebVersion, googleSignInMobVersion } = require('../controllers/usersControllers')
 
 
 
@@ -24,7 +24,7 @@ router.get("/failed", (req, res) => res.send("Failed to login, please try again"
 router.get("/google/callback", passport.authenticate("google", {
     failureRedirect: "/v1/users/failed",
 }), googleSignInWebVersion);
-// router.get("/login/google", googleSignInMobVersion);
+router.get("/login/google", googleSignInMobVersion);
 
 
 module.exports = router;
