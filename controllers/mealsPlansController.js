@@ -54,7 +54,7 @@ module.exports = {
                 });
             }
 
-            await mealsPlans.create({
+            const dataCreate = await mealsPlans.create({
                 userId : req.users.id,
                 mealsTime : body.mealsTime,
                 date : body.date
@@ -80,15 +80,11 @@ module.exports = {
             }
 
             await t.commit()
-            const cekData = await mealsPlans.findAll({
-                where : { userId : req.users.id, date : body.date},
-                attributes : { exclude : ["createdAt", "updatedAt"] }
-            })
 
             return res.status(200).json({
                         status: "success",
                         message: "Succesfully input new MealsPlan",
-                        datauser : cekData
+                        data : dataCreate
                     });
             
         } catch (error) {
