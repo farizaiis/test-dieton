@@ -6,8 +6,8 @@ const { authAdmin } = require('../middlewares/authorization')
 const uploadProfilePic = require('../middlewares/uploadProfilePic')
 const uploadCover = require('../middlewares/uploadCover')
 const passport = require('../middlewares/passport')
-// const passportForWeb = require('../middlewares/passport1')
-const { googleSignInMobVersion } = require('../controllers/usersControllers')
+const { googleSignInWebVersion } = require('../controllers/usersControllers')
+
 
 
 router.post('/register', users.signup);
@@ -19,15 +19,12 @@ router.get('/userprofile', loginCheck, users.getUserById);
 router.get('/', loginCheck, authAdmin, users.getAllUser);
 router.put('/verifiedaccount/:id', users.verifiedAccount);
 router.put('/resetpassword', users.forgotPass);
-router.get("/login/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+router.get("/signin/google", passport.authenticate("google", { scope: ["https://www.googleapis.com/auth/plus.login","profile", "email"] }));
 router.get("/failed", (req, res) => res.send("Failed to login, please try again"));
 router.get("/google/callback", passport.authenticate("google", {
     failureRedirect: "/v1/users/failed",
-    successRedirect: "https://dieton.netlify.app/homepage",
-}), googleSignInMobVersion);
-// router.get("/signin/google", passportForWeb.authenticate("google", { scope: ["profile", "email"] }));
-// router.get("/signinfailed", (req, res) => res.send("Failed to login, please try again"));
-// router.get("/google/callbackweb", passportForWeb.authenticate("google", { failureRedirect: "/v1/users/signinfailed" }), googleSignInWebVersion);
+}), googleSignInWebVersion);
+// router.get("/login/google", googleSignInMobVersion);
 
 
 module.exports = router;
