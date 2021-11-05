@@ -10,18 +10,32 @@ cloudinary.config({
 });
 
 module.exports = (fieldName) => {
-    const storage = new CloudinaryStorage({
-        cloudinary: cloudinary,
-        params: {
-            folder: "profilePic"
-        }
-        })
-    
-        const upload = multer({ storage: storage }).single(fieldName)
-
-    return (req, res, next) => {
-        upload(req, res, (err) => {
-            return next();
+    try {
+        const storage = new CloudinaryStorage({
+            cloudinary: cloudinary,
+            params: {
+                folder: "profilePic",
+                resource_type: "raw",
+                public_id: (req, file) => "image - " + new Date().getTime() + path.extname(file.originalname),
+            },
         });
-    }
-}
+
+        const upload = multer({
+            storage: storage,
+            // fileFilter: (req, file, cb) => {
+            //     let ext = path.extname(file.originalname);
+            //     if (ext !== ".jpg" && ext !== ".jpeg" && ext !== ".png") {
+            //         cb(new Error("File type is not supported"), false);
+            //         return;
+            //     }
+            //     cb(null, true);
+            // },
+        }).single(fieldName)
+
+        return (req, res, next) => {
+            upload(req, res, (err) => {
+                return next();
+            });
+        };
+    } catch (error) { }
+};

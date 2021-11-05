@@ -1,4 +1,5 @@
-const { calorieTrackers, users } = require('../models');
+const { calorieTrackers, users, sequelize } = require('../models');
+const moment = require('moment');
 const Joi = require('joi')
 
 module.exports = {
@@ -14,13 +15,14 @@ module.exports = {
                 },
                 include: [{
                     model: users,
-                }]
+                    attributes: {exclude: ["password", "createdAt", "updatedAt"]},
+                }],
             });
 
             if (!dataCalorie) {
                 return res.status(400).json({
                     status: "failed",
-                    message: "data not found"
+                    message: "data not found",
                 })
             };
 
@@ -40,6 +42,7 @@ module.exports = {
 
     updateCalorieTracker: async (req, res) => {
         const body = req.body;
+        const t = await sequelize.transaction()
 
         try {
             const schema = Joi.object({
@@ -67,7 +70,6 @@ module.exports = {
                 }
             })
 
-
             const dataCalorieTrack2 = await calorieTrackers.update({
                 remainCalSize: body.calorieSize - dataCalorieTrack.calConsumed
             },
@@ -76,7 +78,7 @@ module.exports = {
                         userId: req.users.id,
                         date: today
                     }
-            });
+            }, { transaction: t });
 
             const calorieUser = await users.update({
                 calorieSize: body.calorieSize
@@ -85,41 +87,40 @@ module.exports = {
                     where: {
                         id: req.users.id
                     }
-            });
+            }, { transaction: t });
+
+            await t.commit()
 
             if (!dataCalorieTrack2 || !calorieUser) {
                 return res.status(400).json({
                     status: "failed",
                     message: "unable to input the data"
                 })
-            }
-            
-            const dataProfileUser = await users.findOne ({
-                where: {
-                    id: req.users.id
-                }
-            });
+            };
 
             const dataCalorieUser = await calorieTrackers.findOne({
                 where: {
                     userId: req.users.id,
                     date: today
-                }
+                },
+                include: [{
+                    model: users,
+                    attributes: {exclude: ["password", "createdAt", "updatedAt"]},
+                }],
             });
 
             return res.status(200).json({
                 status: "success",
                 message: "success update calorie size",
-                dataUser: dataProfileUser,
-                dataCalorieTrackerUser: dataCalorieUser
+                dataCalorieTrackerUser: dataCalorieUser,
             });
 
         } catch (error) {
-            console.log("🚀 ~ file: usersControllers.js ~ line 316 ~ update: ~ error", error)
+            await t.rollback()
             return res.status(500).json({
                 status: "failed",
-                message: "Internal Server Error"
-            })
+                message: "Internal Server Error",
+            });
         }
     }
 };
