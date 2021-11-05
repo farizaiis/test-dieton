@@ -7,6 +7,7 @@ const { encrypt, comparePass } = require('../helper/bcrypt');
 const verify = require('../helper/googleHelper');
 const nodemailer = require('nodemailer');
 const randomstring = require('randomstring');
+moment.suppressDeprecationWarnings = true
 
 module.exports = {
   signup: async (req, res) => {
