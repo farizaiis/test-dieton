@@ -3,9 +3,20 @@ const cors = require('cors')
 const app = express()
 const Router = require('./routes/index')
 const moment = require('moment')
+const session = require('cookie-session')
+const passport = require('./middlewares/passport')
+// const passportForWeb = require('./middlewares/passport1')
 
 app.use(cors())
 app.use(express.json())
+app.use(session({
+    name: "user-cookie",
+    keys: ["key1", "key2"],
+}))
+app.use(passport.initialize())
+// app.use(passportForWeb.initialize())
+app.use(passport.session())
+// app.use(passportForWeb.session())
 app.use('/v1', Router)
 
 app.get("/", (req,res)=>{
