@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "db:migrate": "sequelize db:migrate",
@@ -17,14 +17,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/binarxglints_batch14/finalproject/dieton/backenddieton.git"
+    "url": "git+https://github.com/farizaiis/test-dieton.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/binarxglints_batch14/finalproject/dieton/backenddieton/issues"
+    "url": "https://github.com/farizaiis/test-dieton.git/issues"
   },
-  "homepage": "https://gitlab.com/binarxglints_batch14/finalproject/dieton/backenddieton#readme",
+  "homepage": "https://github.com/farizaiis/test-dieton.git#readme",
   "dependencies": {
     "@joi/date": "^2.1.0",
     "bcrypt": "^5.0.1",
@@ -34,6 +34,7 @@
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "google-auth-library": "^7.10.1",
     "heroku": "^7.59.1",
     "joi": "^17.4.2",
     "jsonwebtoken": "^8.5.1",

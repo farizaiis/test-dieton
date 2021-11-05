@@ -1,6 +1,5 @@
 const Joi = require('joi').extend(require('@joi/date'))
 const { weightMeasures, users } = require('../models')
-const moment = require('moment')
 const { Op } = require('sequelize')
 
 
@@ -8,16 +7,20 @@ module.exports = {
     postWeight: async(req, res) => {
         const body = req.body
         try {
-            const today = moment.utc(new Date()).local().format("YYYY-M-D")
+            const todayDate = new Date()
+            const today = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
+            
+            const dataDate = new Date(body.date)
+            const cekDate = new Date(dataDate.getFullYear(), dataDate.getMonth(), dataDate.getDate())
 
-            if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") < today) {
+            if (cekDate < today) {
                 return res.status(400).json({
                     status: "failed",
                     message: "Cant Create date already passed"
                 })
             }
 
-            if (moment.utc(new Date(body.date)).local().format("YYYY-M-D") > today) {
+            if (cekDate > today) {
                 return res.status(400).json({
                     status: "failed",
                     message: "Cant Create for tomorrow"
@@ -142,22 +145,25 @@ module.exports = {
         const thigh = req.body.thigh;
 
         try {
-            const today = moment.utc(new Date()).local().format("YYYY-M-D")
+            const todayDate = new Date()
+            const today = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
+            
+            const dataDate = new Date(req.query.date)
+            const cekDate = new Date(dataDate.getFullYear(), dataDate.getMonth(), dataDate.getDate())
 
-            if (moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") < today) {
+            if (cekDate < today) {
                 return res.status(400).json({
                     status: "failed",
-                    message: "Cant update date already passed"
+                    message: "Cant Create date already passed"
                 })
             }
 
-            if (moment.utc(new Date(req.query.date)).local().format("YYYY-M-D") > today) {
+            if (cekDate > today) {
                 return res.status(400).json({
                     status: "failed",
-                    message: "Cant update for tomorrow"
+                    message: "Cant Create for tomorrow"
                 })
             }
-
             const schema = Joi.object({
                 weight: Joi.number().required(),
                 waistline: Joi.number().required(),
