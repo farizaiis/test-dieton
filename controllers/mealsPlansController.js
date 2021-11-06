@@ -77,6 +77,8 @@ module.exports = {
                     date : body.date
                 },
                 { transaction : t })
+
+                await t.commit()
             }
 
             await t.commit()
