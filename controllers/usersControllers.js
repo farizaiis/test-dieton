@@ -1,4 +1,4 @@
-const { users, calorieTrackers, weightMeasures, sequelize } = require('../models');
+const { users, calorieTrackers, weightMeasures } = require('../models');
 require('dotenv').config();
 const Joi = require('joi');
 const moment = require('moment');
@@ -12,7 +12,6 @@ moment.suppressDeprecationWarnings = true
 module.exports = {
   signup: async (req, res) => {
     const body = req.body;
-    const t = await sequelize.transaction();
 
     try {
       const schema = Joi.object({
@@ -69,14 +68,14 @@ module.exports = {
         calorieSize: body.calorieSize,
         progress: 0,
         BMI: Math.round(body.weight / ((body.height / 100) ** 2)),
-      }, { transaction: t });
+      });
 
       const createCalorieSize = await calorieTrackers.create({
         userId: userCheck.dataValues.id,
         calConsumed: 0,
         remainCalSize: body.calorieSize,
         date: moment(new Date()).local().format("YYYY-M-D")
-      }, { transaction: t });
+      });
 
       const createWeightMeasure = await weightMeasures.create({
         userId: userCheck.dataValues.id,
@@ -84,9 +83,7 @@ module.exports = {
         waistline: body.waistline,
         thigh: body.thigh,
         date: moment(new Date()).local().format("YYYY-M-D")
-      }, { transaction: t });
-
-      await t.commit()
+      });
 
       const payload = {
         role: userCheck.dataValues.role,
@@ -352,13 +349,11 @@ module.exports = {
                 </html>`
       };
 
-      let Email = ""
+      let Email = "Verification email has sent"
 
       transporter.sendMail(mailOptions, function (error, info) {
         if (error) {
           console.log(error);
-        } else {
-          Email = "Email Sent"
         }
       });
 
@@ -380,7 +375,6 @@ module.exports = {
       });
 
     } catch (error) {
-      await t.rollback()
       return res.status(500).json({
         status: "failed",
         message: "Internal Server Error",
@@ -507,7 +501,6 @@ module.exports = {
 
   updateUserProfile: async (req, res) => {
     const body = req.body;
-    const t = await sequelize.transaction();
 
     try {
       const schema = Joi.object({
@@ -560,8 +553,7 @@ module.exports = {
         }, {
           where: {
             id: req.users.id
-          }
-        }, { transaction: t })
+          }})
       };
 
       const updateUser = await users.update({
@@ -573,9 +565,7 @@ module.exports = {
           where: {
             id: req.users.id
           }
-        }, { transaction: t });
-
-      await t.commit()
+        });
 
       if (!updateUser) {
         return res.status(400).json({
@@ -598,7 +588,6 @@ module.exports = {
       });
 
     } catch (error) {
-      await t.rollback();
       return res.status(500).json({
         status: "failed",
         message: "Internal Server Error"
@@ -1083,13 +1072,11 @@ module.exports = {
                 </html>`
       };
 
-      let Email = ""
+      let Email = "Forgot Password sent to Email"
 
       transporter.sendMail(mailOptions, function (error, info) {
         if (error) {
           console.log(error);
-        } else {
-          Email = "Email Sent"
         }
       });
 
@@ -1107,7 +1094,6 @@ module.exports = {
   },
 
   googleSignInWebVersion: async (req, res) => {
-    const t = await sequelize.transaction();
     let payload;
     try {
       const userGooglePass = `${req.user._json.azp}${req.user._json.email}${req.user._json.iat}`
@@ -1135,14 +1121,14 @@ module.exports = {
           progress: 0,
           BMI: 0,
           isVerified: true
-        }, { transaction: t });
+        });
 
         const createCalorie = await calorieTrackers.create({
           userId: createProfile.dataValues.id,
           calConsumed: 0,
           remainCalSize: 0,
           data: moment(new Date()).local().format("YYYY-M-D")
-        }, { transaction: t });
+        });
 
         const createWeight = await weightMeasures.create({
           userId: createProfile.dataValues.id,
@@ -1150,9 +1136,7 @@ module.exports = {
           waistline: 0,
           thigh: 0,
           date: moment(new Date()).local().format("YYYY-M-D")
-        }, { transaction: t });
-
-        await t.commit()
+        });
 
         payload = {
           role: createProfile.dataValues.role,
@@ -1171,7 +1155,6 @@ module.exports = {
 
     } catch (error) {
       console.log("🚀 ~ file: usersControllers.js ~ line 1172 ~ googleSignInWebVersion: ~ error", error)
-      await t.rollback();
       return res.status(500).json({
         status: "failed",
         message: "Internal Server Error",
@@ -1182,7 +1165,6 @@ module.exports = {
   googleSignInMobVersion: async (req, res) => {
     const { token } = req.body;
     const googleAuth = await verify(token);
-    const t = await sequelize.transaction();
     const userGooglePass = `${googleAuth.azp}${googleAuth.email}${googleAuth.iat}`
     let payload;
 
@@ -1211,14 +1193,14 @@ module.exports = {
           progress: 0,
           BMI: 0,
           isVerified: true
-        }, { transaction: t });
+        });
 
         const createCalorie = await calorieTrackers.create({
           userId: createProfile.dataValues.id,
           calConsumed: 0,
           remainCalSize: 0,
           data: moment(new Date()).local().format("YYYY-M-D")
-        }, { transaction: t });
+        });
 
         const createWeight = await weightMeasures.create({
           userId: createProfile.dataValues.id,
@@ -1226,9 +1208,7 @@ module.exports = {
           waistline: 0,
           thigh: 0,
           date: moment(new Date()).local().format("YYYY-M-D")
-        }, { transaction: t });
-
-        await t.commit()
+        });
 
         payload = {
           role: createProfile.dataValues.role,
@@ -1246,7 +1226,6 @@ module.exports = {
       });
 
     } catch (error) {
-      await t.rollback()
       return res.status(500).json({
         status: "failed",
         message: "Internal Server Error",

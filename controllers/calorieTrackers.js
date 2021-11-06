@@ -1,4 +1,4 @@
-const { calorieTrackers, users, sequelize } = require('../models');
+const { calorieTrackers, users } = require('../models');
 const moment = require('moment');
 const Joi = require('joi')
 
@@ -54,7 +54,6 @@ module.exports = {
 
     updateCalorieTracker: async (req, res) => {
         const body = req.body;
-        const t = await sequelize.transaction()
 
         try {
             const schema = Joi.object({
@@ -99,9 +98,7 @@ module.exports = {
                     where: {
                         id: req.users.id
                     }
-            }, { transaction: t });
-
-            await t.commit()
+            });
 
             if (!dataCalorieTrack2 || !calorieUser) {
                 return res.status(400).json({
@@ -128,7 +125,6 @@ module.exports = {
             });
 
         } catch (error) {
-            await t.rollback()
             return res.status(500).json({
                 status: "failed",
                 message: "Internal Server Error",
