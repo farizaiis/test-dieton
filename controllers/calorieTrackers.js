@@ -89,7 +89,7 @@ module.exports = {
                         userId: req.users.id,
                         date: today
                     }
-            }, { transaction: t });
+            });
 
             const calorieUser = await users.update({
                 calorieSize: body.calorieSize
