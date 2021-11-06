@@ -4,7 +4,6 @@ const { mealsPlans, foods, calorieTrackers, users, sequelize } = require('../mod
 module.exports = {
     postMealsPlans : async (req, res) => {
         const body = req.body
-        const t = await sequelize.transaction();
         try {
             const schema = Joi.object({
                 userId : Joi.number(),
@@ -58,8 +57,14 @@ module.exports = {
                 userId : req.users.id,
                 mealsTime : body.mealsTime,
                 date : body.date
-            },
-            { transaction : t });
+            });
+
+            if(!dataCreate) {
+                return res.status(400).json({
+                    status: "fail",
+                    message: "Fail Create",
+                });
+            }
 
             const cekCalorieTracker = await calorieTrackers.findOne({
                 where : {date : body.date, userId : req.users.id}
@@ -75,13 +80,8 @@ module.exports = {
                     calConsumed : 0,
                     remainCalSize : cekCalSize.dataValues.calorieSize,
                     date : body.date
-                },
-                { transaction : t })
-
-                await t.commit()
+                })
             }
-
-            await t.commit()
 
             return res.status(200).json({
                         status: "success",
@@ -90,7 +90,6 @@ module.exports = {
                     });
             
         } catch (error) {
-            await t.rollback()
             if (error.name === "SequelizeDatabaseError" && error.parent.routine === "enum_in") {
                 return res.status(400).json({ status : "failed", message: "Breakfast, Lunch, or Dinner only for meals time" })
             }
