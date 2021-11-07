@@ -24,7 +24,7 @@ router.get("/failed", (req, res) => res.send("Failed to login, please try again"
 router.get("/google/callback", passport.authenticate("google", {
     failureRedirect: "/v1/users/failed",
 }), googleSignInWebVersion);
-router.get("/login/google", googleSignInMobVersion);
+router.post("/login/google", googleSignInMobVersion);
 
 
 module.exports = router;

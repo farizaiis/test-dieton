@@ -81,36 +81,50 @@ module.exports = {
                 }
             })
 
+            if (!dataCalorieTrack) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "data not found",
+                })
+            }
+
             const dataCalorieTrack2 = await calorieTrackers.update({
                 remainCalSize: body.calorieSize - dataCalorieTrack.calConsumed
             },
                 {
                     where: {
                         userId: req.users.id,
-                        date: today
+                        date: today,
                     }
             });
 
+            if (!dataCalorieTrack2) {
+                return res.status(400).json({
+                    status: "failed",
+                    message: "unable to update data calorie",
+                })
+            };
+
             const calorieUser = await users.update({
-                calorieSize: body.calorieSize
+                calorieSize: body.calorieSize,
             },
                 {
                     where: {
-                        id: req.users.id
+                        id: req.users.id,
                     }
             });
 
-            if (!dataCalorieTrack2 || !calorieUser) {
+            if (!calorieUser) {
                 return res.status(400).json({
                     status: "failed",
-                    message: "unable to input the data"
+                    message: "data calorie tracker has been update, but please update again data calorie user",
                 })
             };
 
             const dataCalorieUser = await calorieTrackers.findOne({
                 where: {
                     userId: req.users.id,
-                    date: today
+                    date: today,
                 },
                 include: [{
                     model: users,
