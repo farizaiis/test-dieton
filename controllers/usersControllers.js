@@ -70,12 +70,26 @@ module.exports = {
         BMI: Math.round(body.weight / ((body.height / 100) ** 2)),
       });
 
+      if (!userCheck) {
+        return res.status(400).json({
+          status: "failed",
+          message: "data user unable to create"
+        })
+      };
+
       const createCalorieSize = await calorieTrackers.create({
         userId: userCheck.dataValues.id,
         calConsumed: 0,
         remainCalSize: body.calorieSize,
         date: moment(new Date()).local().format("YYYY-M-D")
       });
+
+      if (!createCalorieSize) {
+        return res.status(400).json({
+          status: "failed",
+          message: "user data has been created, but please update manually for your calorie size, and weight measure",
+        })
+      };
 
       const createWeightMeasure = await weightMeasures.create({
         userId: userCheck.dataValues.id,
@@ -361,7 +375,7 @@ module.exports = {
         where: {
           id: userCheck.dataValues.id
         },
-        attributes: {exclude: ["password", "createdAt", "updatedAt"]},
+        attributes: { exclude: ["password", "createdAt", "updatedAt"] },
       });
 
       return res.status(200).json({
@@ -553,7 +567,8 @@ module.exports = {
         }, {
           where: {
             id: req.users.id
-          }})
+          }
+        })
       };
 
       const updateUser = await users.update({
@@ -563,7 +578,7 @@ module.exports = {
       },
         {
           where: {
-            id: req.users.id
+            id: req.users.id,
           }
         });
 
@@ -578,7 +593,7 @@ module.exports = {
         where: {
           id: req.users.id
         },
-        attributes: {exclude: ["password", "createdAt", "updatedAt"]},
+        attributes: { exclude: ["password", "createdAt", "updatedAt"] },
       });
 
       return res.status(200).json({
@@ -647,7 +662,7 @@ module.exports = {
         where: {
           id: req.users.id
         },
-        attributes: {exclude: ["password", "createdAt", "updatedAt"]},
+        attributes: { exclude: ["password", "createdAt", "updatedAt"] },
       });
 
       return res.status(200).json({
@@ -673,7 +688,7 @@ module.exports = {
         where: {
           id: req.users.id
         },
-        attributes: {exclude: ["password", "createdAt", "updatedAt"]},
+        attributes: { exclude: ["password", "createdAt", "updatedAt"] },
       });
 
       if (!profileUser) {
@@ -706,7 +721,7 @@ module.exports = {
   getAllUser: async (req, res) => {
     try {
       const getAll = await users.findAll({
-        attributes: {exclude: ["password", "createdAt", "updatedAt"]}
+        attributes: { exclude: ["password", "createdAt", "updatedAt"] }
       });
 
       return res.status(200).json({
@@ -808,11 +823,11 @@ module.exports = {
       });
 
       const resetPass = await users.update({
-        password: encrypt(passReset)
+        password: encrypt(passReset),
       },
         {
           where: {
-            email: body.email
+            email: body.email,
           }
         })
 
@@ -1099,7 +1114,7 @@ module.exports = {
       const userGooglePass = `${req.user._json.azp}${req.user._json.email}${req.user._json.iat}`
       const userCheck = await users.findOne({
         where: {
-          email: req.user._json.email
+          email: req.user._json.email,
         }
       })
 
@@ -1107,7 +1122,7 @@ module.exports = {
         payload = {
           role: userCheck.dataValues.role,
           email: userCheck.dataValues.email,
-          id: userCheck.dataValues.id
+          id: userCheck.dataValues.id,
         }
       } else {
         const createProfile = await users.create({
@@ -1123,12 +1138,26 @@ module.exports = {
           isVerified: true
         });
 
+        if (!createProfile) {
+          return res.status(400).json({
+            status: "failed",
+            message: "data user unable to create"
+          })
+        };
+
         const createCalorie = await calorieTrackers.create({
           userId: createProfile.dataValues.id,
           calConsumed: 0,
           remainCalSize: 0,
           data: moment(new Date()).local().format("YYYY-M-D")
         });
+
+        if (!createCalorie) {
+          return res.status(400).json({
+            status: "failed",
+            message: "user data has been created, but please update manually for your calorie size, and weight measure",
+          })
+        };
 
         const createWeight = await weightMeasures.create({
           userId: createProfile.dataValues.id,
@@ -1154,7 +1183,6 @@ module.exports = {
       });
 
     } catch (error) {
-      console.log("🚀 ~ file: usersControllers.js ~ line 1172 ~ googleSignInWebVersion: ~ error", error)
       return res.status(500).json({
         status: "failed",
         message: "Internal Server Error",
@@ -1183,9 +1211,9 @@ module.exports = {
         }
       } else {
         const createProfile = await users.create({
-          fullName: googleAuth.name,
-          email: googleAuth.email,
-          profilePic: googleAuth.picture,
+          fullName: req.user._json.name,
+          email: req.user._json.email,
+          profilePic: req.user._json.picture,
           password: encrypt(userGooglePass),
           height: 0,
           earlyWeight: 0,
@@ -1195,12 +1223,26 @@ module.exports = {
           isVerified: true
         });
 
+        if (!createProfile) {
+          return res.status(400).json({
+            status: "failed",
+            message: "data user unable to create"
+          })
+        };
+
         const createCalorie = await calorieTrackers.create({
           userId: createProfile.dataValues.id,
           calConsumed: 0,
           remainCalSize: 0,
           data: moment(new Date()).local().format("YYYY-M-D")
         });
+
+        if (!createCalorie) {
+          return res.status(400).json({
+            status: "failed",
+            message: "user data has been created, but please update manually for your calorie size, and weight measure",
+          })
+        };
 
         const createWeight = await weightMeasures.create({
           userId: createProfile.dataValues.id,
@@ -1214,7 +1256,7 @@ module.exports = {
           role: createProfile.dataValues.role,
           email: createProfile.dataValues.email,
           id: createProfile.dataValues.id
-        }
+        };
       };
 
       const token = generateToken(payload)

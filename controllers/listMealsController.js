@@ -275,7 +275,7 @@ module.exports = {
                 {where : {id : req.params.id}}
             )
 
-            if(updateList) {
+            if(!updateList) {
                 return res.status(400).json({
                     status : "failed",
                     message : "Fail to update qty meals"
