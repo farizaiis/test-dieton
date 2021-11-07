@@ -1,6 +1,5 @@
 const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
+const client = new OAuth2Client("387212685261-vlc3otrh5be672kf2nketn5gq91mb418.apps.googleusercontent.com");
 
 async function verify(token) {
 
@@ -21,4 +20,4 @@ async function verify(token) {
     }
 }
 
-module.exports = verify;
+module.exports = { verify };

@@ -4,7 +4,7 @@ const Joi = require('joi');
 const moment = require('moment');
 const { generateToken } = require('../helper/jwt');
 const { encrypt, comparePass } = require('../helper/bcrypt');
-const verify = require('../helper/googleHelper');
+const { verify } = require('../helper/googleHelper');
 const nodemailer = require('nodemailer');
 const randomstring = require('randomstring');
 moment.suppressDeprecationWarnings = true
@@ -1191,15 +1191,19 @@ module.exports = {
   },
 
   googleSignInMobVersion: async (req, res) => {
-    const { token } = req.body;
-    const googleAuth = await verify(token);
-    const userGooglePass = `${googleAuth.azp}${googleAuth.email}${googleAuth.iat}`
+    const { token } = req.query;
+    const { email, name, picture, iat} = await verify(token).catch((err) => {
+      return res.status(400).json({
+        name: "GOOGLE_ERROR",
+        message: "got a wrong token",
+      })
+    });
     let payload;
 
     try {
       const userCheck = await users.findOne({
         where: {
-          email: googleAuth.email
+          email: email,
         }
       })
 
@@ -1211,10 +1215,10 @@ module.exports = {
         }
       } else {
         const createProfile = await users.create({
-          fullName: req.user._json.name,
-          email: req.user._json.email,
-          profilePic: req.user._json.picture,
-          password: encrypt(userGooglePass),
+          fullName: name,
+          email: email,
+          profilePic: picture,
+          password: "undefined",
           height: 0,
           earlyWeight: 0,
           calorieSize: 0,
@@ -1264,7 +1268,7 @@ module.exports = {
       return res.status(200).json({
         status: "success",
         message: "sign in successfully",
-        token: token
+        token: token,
       });
 
     } catch (error) {
