@@ -1,11 +1,10 @@
 const Joi = require('joi').extend(require('@joi/date'));
-const { weightMeasures, users, sequelize } = require('../models');
+const { weightMeasures, users } = require('../models');
 const { Op } = require('sequelize');
 
 module.exports = {
     postWeight: async (req, res) => {
         const body = req.body;
-        const t = await sequelize.transaction();
         try {
             const todayDate = new Date();
             const today = new Date(
@@ -82,8 +81,7 @@ module.exports = {
                     waistline: body.waistline,
                     thigh: body.thigh,
                     date: body.date,
-                },
-                { transaction: t }
+                }
             );
 
             const getUser = await users.findOne({
@@ -102,11 +100,8 @@ module.exports = {
                 },
                 {
                     where: { id: req.users.id },
-                },
-                { transaction: t }
+                }
             );
-
-            await t.commit();
 
             return res.status(200).json({
                 status: 'Success',
@@ -114,7 +109,6 @@ module.exports = {
                 data: createWnm,
             });
         } catch (error) {
-            await t.rollback();
             return res.status(500).json({
                 status: 'failed',
                 message: 'Internal Server Error',
@@ -167,8 +161,7 @@ module.exports = {
     updateWeight: async (req, res) => {
         const weight = req.body.weight;
         const waistline = req.body.waistline;
-        const thigh = req.body.thigh;
-        const t = await sequelize.transaction();
+        const thigh = req.body.thigh; 
 
         try {
             const todayDate = new Date();
@@ -231,8 +224,7 @@ module.exports = {
                 },
                 {
                     where: { userId: req.users.id, date: req.query.date },
-                },
-                { transaction: t }
+                }
             );
 
             if (!updateWeight) {
@@ -258,18 +250,14 @@ module.exports = {
                 },
                 {
                     where: { id: req.users.id },
-                },
-                { transaction: t }
+                }
             );
-
-            await t.commit();
 
             return res.status(200).json({
                 status: 'Success',
                 message: 'Data update successfully',
             });
         } catch (error) {
-            await t.rollback();
             return res.status(500).json({
                 status: 'failed',
                 message: 'Internal server error',

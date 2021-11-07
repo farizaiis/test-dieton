@@ -1,5 +1,11 @@
 const app = require('../server');
 const supertest = require('supertest');
+const todayDate = new Date()
+const today = new Date(
+    todayDate.getFullYear(),
+    todayDate.getMonth(),
+    todayDate.getDate()
+); 
 
 test('POST /v1/mealsplan/', async () => {
     const token = await supertest(app).post('/v1/users/signin').send({
@@ -8,8 +14,8 @@ test('POST /v1/mealsplan/', async () => {
     });
 
     const data = {
-        mealsTime: 'Lunch',
-        date: '2021-11-08',
+        mealsTime: 'Breakfast',
+        date: today,
     };
 
     await supertest(app)
@@ -30,8 +36,8 @@ test('GET /v1/mealsplan/', async () => {
     });
 
     const data = {
-        mealsTime: 'Dinner',
-        date: '2021-11-10',
+        mealsTime: 'Lunch',
+        date: today,
     };
 
     await supertest(app)
@@ -56,7 +62,7 @@ test('GET /v1/mealsplan?date=', async () => {
 
     const data = {
         mealsTime: 'Dinner',
-        date: '2021-11-14',
+        date: today,
     };
 
     const create = await supertest(app)
