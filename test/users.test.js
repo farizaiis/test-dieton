@@ -4,8 +4,8 @@ const supertest = require('supertest');
 test('POST /v1/users/register', async () => {
     const data = {
         fullName: 'Testing Test',
-        email: 'testingtest2@gmail.com',
-        password: 'testingtest2',
+        email: 'unittesting@gmail.com',
+        password: 'unittesting',
         calorieSize: 1500,
         weight: 86,
         height: 175,

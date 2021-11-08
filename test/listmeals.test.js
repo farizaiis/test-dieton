@@ -12,7 +12,7 @@ test('POST /v1/listmeals', async () => {
         .set('Authorization', 'Bearer ' + token.body.token)
         .send({
             mealsTime: 'Breakfast',
-            date: '2021-11-07',
+            date: '2021-11-10',
         });
 
     const id = 2;
@@ -68,7 +68,7 @@ test('DELETE /v1/listmeals/:id', async () => {
         .set('Authorization', 'Bearer ' + token.body.token)
         .send({
             mealsTime: 'Lunch',
-            date: '2021-11-07',
+            date: '2021-11-10',
         });
 
     const getFood = await supertest(app)
@@ -94,20 +94,9 @@ test('DELETE /v1/listmeals/:id', async () => {
 });
 
 test('PUT /v1/listmeals/:id', async () => {
-    await supertest(app).post('/v1/users/register').send({
-        fullName: 'Testing Test',
-        email: 'testingtest2@gmail.com',
-        password: 'testingtest2',
-        calorieSize: 1500,
-        weight: 86,
-        height: 175,
-        waistline: 44,
-        thigh: 50,
-    });
-
     const token = await supertest(app).post('/v1/users/signin').send({
-        email: 'testingtest2@gmail.com',
-        password: 'testingtest2',
+        email: 'admin@gmail.com',
+        password: 'admindieton',
     });
 
     const dataMealsPlan = await supertest(app)
@@ -115,7 +104,7 @@ test('PUT /v1/listmeals/:id', async () => {
         .set('Authorization', 'Bearer ' + token.body.token)
         .send({
             mealsTime: 'Dinner',
-            date: '2021-11-07',
+            date: '2021-11-10',
         });
 
     await supertest(app)
@@ -128,7 +117,7 @@ test('PUT /v1/listmeals/:id', async () => {
         });
 
     await supertest(app)
-        .put('/v1/listmeals/' + 1)
+        .put('/v1/listmeals/' + 2)
         .set('Authorization', 'Bearer ' + token.body.token)
         .send({
             qty: 1,

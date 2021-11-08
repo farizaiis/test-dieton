@@ -11,7 +11,7 @@ test('POST /v1/wms/', async () => {
         weight: 70,
         waistline: 30,
         thigh: 40,
-        date: '2021-11-06',
+        date: '2021-11-08'
     };
 
     const create = await supertest(app)
@@ -41,7 +41,7 @@ test('PUT /v1/wms?date=', async () => {
         weight: 70,
         waistline: 30,
         thigh: 40,
-        date: '2021-11-06',
+        date: '2021-11-08'
     };
 
     await supertest(app)
@@ -66,27 +66,24 @@ test('PUT /v1/wms?date=', async () => {
 });
 
 test('DELETE /v1/wms/:id', async () => {
+    const createUser = await supertest(app).post('/v1/users/register').send({
+        fullName: 'Fariz',
+        email: 'testwnm@gmail.com',
+        password: 'testbaru',
+        calorieSize: 1500,
+        weight: 86,
+        height: 175,
+        waistline: 44,
+        thigh: 50,
+    })
+
     const token = await supertest(app).post('/v1/users/signin').send({
         email: 'admin@gmail.com',
         password: 'admindieton',
     });
 
     await supertest(app)
-        .delete('/v1/wms/2')
-        .set('Authorization', 'Bearer ' + token.body.token);
-
-    const create = await supertest(app)
-        .post('/v1/wms/')
-        .set('Authorization', 'Bearer ' + token.body.token)
-        .send({
-            weight: 70,
-            waistline: 30,
-            thigh: 40,
-            date: '2021-11-06',
-        });
-
-    await supertest(app)
-        .delete('/v1/wms/' + create.body.data.id)
+        .delete('/v1/wms/' + createUser.body.dataWeight.id)
         .set('Authorization', 'Bearer ' + token.body.token)
         .expect(200)
         .then((res) => {
@@ -107,7 +104,7 @@ test('GET /v1/wms/', async () => {
             weight: 70,
             waistline: 30,
             thigh: 40,
-            date: '2021-11-06',
+            date: '2021-11-08'
         });
 
     await supertest(app)
@@ -120,34 +117,31 @@ test('GET /v1/wms/', async () => {
 });
 
 test('GET /v1/wms?date=', async () => {
+    const createUser = await supertest(app).post('/v1/users/register').send({
+        fullName: 'Fariz',
+        email: 'testwnm2@gmail.com',
+        password: 'testbaru',
+        calorieSize: 1500,
+        weight: 86,
+        height: 175,
+        waistline: 44,
+        thigh: 50,
+    })
+
     const token = await supertest(app).post('/v1/users/signin').send({
-        email: 'admin@gmail.com',
-        password: 'admindieton',
+        email: 'testwnm2@gmail.com',
+        password: 'testbaru'
     });
 
     await supertest(app)
-        .delete('/v1/wms/4')
-        .set('Authorization', 'Bearer ' + token.body.token);
-
-    const create = await supertest(app)
-        .post('/v1/wms/')
-        .set('Authorization', 'Bearer ' + token.body.token)
-        .send({
-            weight: 70,
-            waistline: 30,
-            thigh: 40,
-            date: '2021-11-06',
-        });
-
-    await supertest(app)
-        .get('/v1/wms?date=' + create.body.data.date)
+        .get('/v1/wms?date=' + '2021-11-08')
         .set('Authorization', 'Bearer ' + token.body.token)
         .expect(200)
         .then((res) => {
-            expect(res.body.data.weight).toBe(create.body.data.weight);
-            expect(res.body.data.waistline).toBe(create.body.data.waistline);
-            expect(res.body.data.thigh).toBe(create.body.data.thigh);
-            expect(res.body.data.date).toBe(create.body.data.date);
+            expect(res.body.data.weight).toBe(createUser.body.dataWeight.weight);
+            expect(res.body.data.waistline).toBe(createUser.body.dataWeight.waistline);
+            expect(res.body.data.thigh).toBe(createUser.body.dataWeight.thigh);
+            expect(res.body.data.date).toBe(createUser.body.dataWeight.date);
         });
 });
 
@@ -156,20 +150,6 @@ test('GET /v1/wms/:date', async () => {
         email: 'admin@gmail.com',
         password: 'admindieton',
     });
-
-    await supertest(app)
-        .delete('/v1/wms/5')
-        .set('Authorization', 'Bearer ' + token.body.token);
-
-    await supertest(app)
-        .post('/v1/wms/')
-        .set('Authorization', 'Bearer ' + token.body.token)
-        .send({
-            weight: 70,
-            waistline: 30,
-            thigh: 40,
-            date: '2021-11-06',
-        });
 
     const month = '2010-11';
 

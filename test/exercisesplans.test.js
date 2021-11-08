@@ -21,8 +21,8 @@ test('POST /v1/exercisesplan/', async () => {
         exerciseId: exercisesData.body.data.id,
         long: 20,
         time: 'Hours',
-        alert: '08:00',
-        date: '2021-11-06',
+        alert: '01:00',
+        date: '2021-11-08',
     };
 
     await supertest(app)
@@ -61,8 +61,8 @@ test('POST /v1/exercisesplan/', async () => {
         exerciseId: exercisesData.body.data.id,
         long: 20,
         time: 'Minutes',
-        alert: '01:00',
-        date: '2021-11-06',
+        alert: '02:00',
+        date: '2021-11-08',
     };
 
     await supertest(app)
@@ -104,8 +104,8 @@ test('DELETE /v1/exercisesplan/:id', async () => {
             exerciseId: exercisesData.body.data.id,
             long: 20,
             time: 'Minutes',
-            alert: '22:00',
-            date: '2021-11-06',
+            alert: '03:00',
+            date: '2021-11-08',
         });
 
     await supertest(app)
@@ -152,8 +152,8 @@ test('GET /v1/exercisesplan?date=', async () => {
         exerciseId: exercisesData.body.data.id,
         long: 20,
         time: 'Minutes',
-        alert: '12:00',
-        date: '2021-11-06',
+        alert: '04:00',
+        date: '2021-11-08',
     };
 
     await supertest(app)
@@ -193,15 +193,15 @@ test('PUT /v1/exercisesplan/:id', async () => {
             exerciseId: exercisesData.body.data.id,
             long: 20,
             time: 'Minutes',
-            alert: '16:00',
-            date: '2021-11-06',
+            alert: '05:00',
+            date: '2021-11-08',
         });
 
     const data = {
         long: 30,
         time: 'Minutes',
-        alert: '15:00',
-        date: '2021-11-06',
+        alert: '06:00',
+        date: '2021-11-08',
     };
 
     await supertest(app)
@@ -243,8 +243,8 @@ test('PUT /v1/exercisesplan/status/:id', async () => {
             exerciseId: exercisesData.body.data.id,
             long: 20,
             time: 'Minutes',
-            alert: '20:00',
-            date: '2021-11-06',
+            alert: '07:00',
+            date: '2021-11-08',
         });
 
     await supertest(app)
