@@ -1,12 +1,12 @@
-const multer = require("multer");
-const path = require("path");
-const cloudinary = require("cloudinary").v2;
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const multer = require('multer');
+const path = require('path');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 cloudinary.config({
-    cloud_name: "dejongos",
-    api_key: "155217614556815",
-    api_secret: "sbMGKszwfhFQ2oUxV4ZwYgc_Qcg",
+    cloud_name: 'dejongos',
+    api_key: '155217614556815',
+    api_secret: 'sbMGKszwfhFQ2oUxV4ZwYgc_Qcg',
 });
 
 module.exports = (fieldName) => {
@@ -14,28 +14,23 @@ module.exports = (fieldName) => {
         const storage = new CloudinaryStorage({
             cloudinary: cloudinary,
             params: {
-                folder: "cover",
-                resource_type: "raw",
-                public_id: (req, file) => "image - " + new Date().getTime() + path.extname(file.originalname),
+                folder: 'cover',
+                resource_type: 'raw',
+                public_id: (req, file) =>
+                    'image - ' +
+                    new Date().getTime() +
+                    path.extname(file.originalname),
             },
         });
 
         const upload = multer({
-            storage: storage,
-            // fileFilter: (req, file, cb) => {
-            //     let ext = path.extname(file.originalname);
-            //     if (ext !== ".jpg" && ext !== ".jpeg" && ext !== ".png") {
-            //         cb(new Error("File type is not supported"), false);
-            //         return;
-            //     }
-            //     cb(null, true);
-            // },
-        }).single(fieldName)
+            storage: storage
+        }).single(fieldName);
 
         return (req, res, next) => {
             upload(req, res, (err) => {
                 return next();
             });
         };
-    } catch (error) { }
+    } catch (error) {}
 };
