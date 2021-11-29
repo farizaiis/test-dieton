@@ -10,6 +10,15 @@ Figma : https://www.figma.com/file/1qFQRolKF2GJ9Wvg6FsvpG/Diet-On?
 #### TECH STACK USED (Back End)
 ![image](https://user-images.githubusercontent.com/46044060/143916279-2d7e3207-cc03-4b40-9c14-03586f4022c0.png)
 
+#### What is DietOn?
+An App that controls users Diet Progress. Users can check their Weight and Measurement progress, set how many Calorie can consume, set Meal Plan and Exercise Planfor check how many Calorie has consumed
+
+#### Next Feature
+- Reminder feature for Exercise Plan and Meals Plan
+- Auto List or Recommended Meals and Exercise Plan for users (based on BMI)
+- Stream Exercise Video Feature
+- Community feature (user can sharing about their progress with other user)
+
 #### HOW TO RUN IN LOCAL
 - After clone this repo run npm install
 - For create database ---> npx sequelize db:create  
