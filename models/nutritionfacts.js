@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     poster: DataTypes.STRING,
     title: DataTypes.STRING,
     creator: DataTypes.STRING,
-    releaseDate: DataTypes.DATE,
+    releaseDate: DataTypes.DATEONLY,
     content: DataTypes.TEXT
   }, {
     sequelize,

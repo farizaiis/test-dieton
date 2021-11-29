@@ -1,5 +1,8 @@
 const app = require('../server');
 const supertest = require('supertest');
+const moment = require('moment');
+moment.suppressDeprecationWarnings = true;
+const today = moment(new Date()).format('YYYY-M-D');
 
 test('POST /v1/exercisesplan/', async () => {
     const token = await supertest(app).post('/v1/users/signin').send({
@@ -22,7 +25,7 @@ test('POST /v1/exercisesplan/', async () => {
         long: 20,
         time: 'Hours',
         alert: '01:00',
-        date: '2021-11-08',
+        date: today,
     };
 
     await supertest(app)
@@ -62,7 +65,7 @@ test('POST /v1/exercisesplan/', async () => {
         long: 20,
         time: 'Minutes',
         alert: '02:00',
-        date: '2021-11-08',
+        date: today,
     };
 
     await supertest(app)
@@ -105,7 +108,7 @@ test('DELETE /v1/exercisesplan/:id', async () => {
             long: 20,
             time: 'Minutes',
             alert: '03:00',
-            date: '2021-11-08',
+            date: today,
         });
 
     await supertest(app)
@@ -153,7 +156,7 @@ test('GET /v1/exercisesplan?date=', async () => {
         long: 20,
         time: 'Minutes',
         alert: '04:00',
-        date: '2021-11-08',
+        date: today,
     };
 
     await supertest(app)
@@ -194,14 +197,14 @@ test('PUT /v1/exercisesplan/:id', async () => {
             long: 20,
             time: 'Minutes',
             alert: '05:00',
-            date: '2021-11-08',
+            date: today,
         });
 
     const data = {
         long: 30,
         time: 'Minutes',
         alert: '06:00',
-        date: '2021-11-08',
+        date: today,
     };
 
     await supertest(app)
@@ -244,7 +247,7 @@ test('PUT /v1/exercisesplan/status/:id', async () => {
             long: 20,
             time: 'Minutes',
             alert: '07:00',
-            date: '2021-11-08',
+            date: today,
         });
 
     await supertest(app)

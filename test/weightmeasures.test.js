@@ -1,5 +1,8 @@
 const app = require('../server');
 const supertest = require('supertest');
+const moment = require('moment');
+moment.suppressDeprecationWarnings = true;
+const today = moment(new Date()).format('YYYY-M-D');
 
 test('POST /v1/wms/', async () => {
     const token = await supertest(app).post('/v1/users/signin').send({
@@ -11,7 +14,7 @@ test('POST /v1/wms/', async () => {
         weight: 70,
         waistline: 30,
         thigh: 40,
-        date: '2021-11-08'
+        date: today
     };
 
     const create = await supertest(app)
@@ -41,7 +44,7 @@ test('PUT /v1/wms?date=', async () => {
         weight: 70,
         waistline: 30,
         thigh: 40,
-        date: '2021-11-08'
+        date: today
     };
 
     await supertest(app)
@@ -104,7 +107,7 @@ test('GET /v1/wms/', async () => {
             weight: 70,
             waistline: 30,
             thigh: 40,
-            date: '2021-11-08'
+            date: today
         });
 
     await supertest(app)
@@ -134,7 +137,7 @@ test('GET /v1/wms?date=', async () => {
     });
 
     await supertest(app)
-        .get('/v1/wms?date=' + '2021-11-08')
+        .get('/v1/wms?date=' + today)
         .set('Authorization', 'Bearer ' + token.body.token)
         .expect(200)
         .then((res) => {
