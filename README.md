@@ -26,6 +26,6 @@ Figma : link Figma : https://www.figma.com/file/1qFQRolKF2GJ9Wvg6FsvpG/Diet-On?
 
 
 #### Data Admin
-email : fariz@glintsacademy.com 
+email : admin@gmail.com
 
-password : glints_test
+password : admindieton
