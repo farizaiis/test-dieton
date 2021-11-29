@@ -11,7 +11,7 @@ Figma : https://www.figma.com/file/1qFQRolKF2GJ9Wvg6FsvpG/Diet-On?
 ![image](https://user-images.githubusercontent.com/46044060/143916279-2d7e3207-cc03-4b40-9c14-03586f4022c0.png)
 
 #### What is DietOn?
-An App that controls users Diet Progress. Users can check their Weight and Measurement progress, set how many Calorie can consume, set Meal Plan and Exercise Planfor check how many Calorie has consumed
+An App that controls users Diet Progress. Users can check their Weight and Measurement progress, set how many Calorie can consume, set Meal Plan and Exercise Plan for check how many Calorie has consumed
 
 #### Next Feature
 - Reminder feature for Exercise Plan and Meals Plan
