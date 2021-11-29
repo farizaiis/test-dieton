@@ -3,7 +3,7 @@
 
 Documentation Link : https://documenter.getpostman.com/view/17384187/UVCCe49d
 
-Figma : link Figma : https://www.figma.com/file/1qFQRolKF2GJ9Wvg6FsvpG/Diet-On?
+Figma : https://www.figma.com/file/1qFQRolKF2GJ9Wvg6FsvpG/Diet-On?
 
 ![WhatsApp Image 2021-11-29 at 4 53 21 PM](https://user-images.githubusercontent.com/46044060/143911825-78c75bdc-9bbc-4acb-82da-6fdb4a87ee59.jpeg)
 
