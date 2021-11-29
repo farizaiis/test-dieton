@@ -1,5 +1,8 @@
 const app = require('../server');
 const supertest = require('supertest');
+const moment = require('moment');
+moment.suppressDeprecationWarnings = true;
+const today = moment(new Date()).format('YYYY-M-D');
 
 test('POST /v1/mealsplan/', async () => {
     const token = await supertest(app).post('/v1/users/signin').send({
@@ -9,7 +12,7 @@ test('POST /v1/mealsplan/', async () => {
 
     const data = {
         mealsTime: 'Breakfast',
-        date: '2021-11-08',
+        date: today,
     };
 
     await supertest(app)
@@ -31,7 +34,7 @@ test('GET /v1/mealsplan/', async () => {
 
     const data = {
         mealsTime: 'Lunch',
-        date: '2021-11-08',
+        date: today,
     };
 
     await supertest(app)
@@ -56,7 +59,7 @@ test('GET /v1/mealsplan?date=', async () => {
 
     const data = {
         mealsTime: 'Dinner',
-        date: '2021-11-08',
+        date: today,
     };
 
     const create = await supertest(app)
@@ -74,14 +77,20 @@ test('GET /v1/mealsplan?date=', async () => {
 });
 
 test('PUT /v1/mealsplan/status', async () => {
-    const token = await supertest(app).post('/v1/users/signin').send({
-        email: 'admin@gmail.com',
-        password: 'admindieton',
+    const token = await supertest(app).post('/v1/users/register').send({
+        fullName: 'Testing Test',
+        email: 'testingmeals@gmail.com',
+        password: 'unittesting',
+        calorieSize: 1500,
+        weight: 86,
+        height: 175,
+        waistline: 44,
+        thigh: 50,
     });
 
     const data = {
         mealsTime: 'Lunch',
-        date: '2021-11-09',
+        date: today,
     };
 
     const create = await supertest(app)
@@ -104,14 +113,25 @@ test('PUT /v1/mealsplan/status', async () => {
 });
 
 test('DELETE /v1/mealsplan/:id', async () => {
-    const token = await supertest(app).post('/v1/users/signin').send({
+    const token = await supertest(app).post('/v1/users/register').send({
+        fullName: 'Testing Test',
+        email: 'testingmeals2@gmail.com',
+        password: 'unittesting',
+        calorieSize: 1500,
+        weight: 86,
+        height: 175,
+        waistline: 44,
+        thigh: 50,
+    });
+
+    const adminLog = await supertest(app).post('/v1/users/signin').send({
         email: 'admin@gmail.com',
         password: 'admindieton',
-    });
+    }); 
 
     const data = {
         mealsTime: 'Lunch',
-        date: '2021-11-12',
+        date: today,
     };
 
     const create = await supertest(app)
@@ -121,7 +141,7 @@ test('DELETE /v1/mealsplan/:id', async () => {
 
     await supertest(app)
         .delete('/v1/mealsplan/' + create.body.data.id)
-        .set('Authorization', 'Bearer ' + token.body.token)
+        .set('Authorization', 'Bearer ' + adminLog.body.token)
         .expect(200)
         .then((res) => {
             expect(res.body.status).toBe('success');
